@@ -14,11 +14,15 @@ function getBackendBaseUrl(): string {
   );
 }
 
+export function backendUrl(path: `/${string}`): string {
+  return `${getBackendBaseUrl()}${path}`;
+}
+
 export async function backendGet<T>(
   path: `/${string}`
 ): Promise<T> {
   const response = await fetch(
-    `${getBackendBaseUrl()}${path}`,
+    backendUrl(path),
     {
       next: {
         revalidate: 300
