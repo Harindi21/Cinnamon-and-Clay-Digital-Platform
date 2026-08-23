@@ -32,7 +32,7 @@ class ReviewEntity {
     private String body;
 
     @Column(nullable = false)
-    private int rating;
+    private short rating;
 
     @Enumerated(EnumType.STRING)
     @Column(
@@ -69,7 +69,7 @@ class ReviewEntity {
         return body;
     }
 
-    int rating() {
+    short rating() {
         return rating;
     }
 }
