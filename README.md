@@ -46,6 +46,12 @@ The system is designed as a modular monolith with clear domain boundaries, docum
 
 ## Current capabilities
 
+### Administrator security
+
+Administrative API boundaries use OpenID Connect bearer tokens and server-side role-based authorization.
+
+Local development uses Keycloak while the backend remains coupled to the OIDC contract rather than a provider-specific adapter.
+
 ### Public website
 
 The public website retrieves business content from the backend rather than embedding cafe data directly in the frontend.
@@ -208,7 +214,13 @@ Review `.env` before starting the services.
 docker compose --env-file .env -f infra/compose.yaml up -d
 ```
 
-This starts the infrastructure required for local development, including PostgreSQL and MinIO.
+This starts the local infrastructure required for development, including PostgreSQL, MinIO and Keycloak.
+
+Verify the local OIDC provider:
+
+```powershell
+Invoke-RestMethod `
+  http://localhost:8081/realms/kirikopi/.well-known/openid-configuration
 
 ### Run the backend
 

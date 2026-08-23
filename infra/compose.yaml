@@ -48,11 +48,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 10s
     security_opt:
       - no-new-privileges:true
 
   minio-init:
     image: minio/mc:latest
+    container_name: kirikopi-minio-init
     depends_on:
       minio:
         condition: service_healthy
@@ -66,6 +68,28 @@ services:
       - |
         mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
         mc mb --ignore-existing "local/$$MEDIA_S3_BUCKET"
+    security_opt:
+      - no-new-privileges:true
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.1
+    container_name: kirikopi-keycloak
+    restart: unless-stopped
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD:-change-me-locally}
+
+      KEYCLOAK_DEMO_ADMIN_PASSWORD: ${KEYCLOAK_DEMO_ADMIN_PASSWORD:-change-me-locally}
+      KEYCLOAK_DEMO_EDITOR_PASSWORD: ${KEYCLOAK_DEMO_EDITOR_PASSWORD:-change-me-locally}
+    ports:
+      - "${KEYCLOAK_PORT:-8081}:8080"
+    volumes:
+      - ./keycloak/kirikopi-realm.json:/opt/keycloak/data/import/kirikopi-realm.json:ro
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   postgres_data:
