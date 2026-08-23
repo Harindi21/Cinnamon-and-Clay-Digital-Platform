@@ -1,6 +1,6 @@
-# Kirikopi Cafe Platform
+# Cinnamon & Clay Platform
 
-Kirikopi is a full-stack cafe management platform consisting of a public customer website, a mobile administration application, a Spring Boot API, PostgreSQL persistence, and S3-compatible media storage.
+Cinnamon & Clay is a full-stack cafe management platform consisting of a public customer website, a mobile administration application, a Spring Boot API, PostgreSQL persistence, and S3-compatible media storage.
 
 The system is designed as a modular monolith with clear domain boundaries, documented architectural decisions, automated testing, and production-oriented operational practices.
 
@@ -220,7 +220,8 @@ Verify the local OIDC provider:
 
 ```powershell
 Invoke-RestMethod `
-  http://localhost:8081/realms/kirikopi/.well-known/openid-configuration
+  http://localhost:8081/realms/cinnamon-clay/.well-known/openid-configuration
+```
 
 ### Run the backend
 
@@ -229,8 +230,8 @@ In a new terminal:
 ```powershell
 Set-Location backend
 
-$env:DB_URL = "jdbc:postgresql://localhost:5432/kirikopi"
-$env:DB_USER = "kirikopi"
+$env:DB_URL = "jdbc:postgresql://localhost:5432/cinnamon_clay"
+$env:DB_USER = "cinnamon_clay"
 $env:DB_PASSWORD = "change-me-locally"
 
 mvn spring-boot:run

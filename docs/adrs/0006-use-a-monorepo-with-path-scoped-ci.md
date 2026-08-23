@@ -5,7 +5,7 @@
 
 ## Context
 
-The website, admin app, backend, infrastructure and architecture docs belong to one portfolio system and are maintained by one team/person.
+The website, admin app, backend, infrastructure and architecture docs belong to one product system and are maintained together.
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 Create a ruleset targeting the default branch `main`.
 
-Recommended settings for this portfolio repository:
+Recommended settings for this repository:
 
 - Restrict deletions.
 - Block force pushes.
@@ -13,7 +13,7 @@ Recommended settings for this portfolio repository:
 - Require conversation resolution.
 - Require status checks before merging.
 - Require branches to be up to date before merging, or use a merge queue if you enable one later.
-- Require linear history and use squash merge for a clean portfolio history.
+- Require linear history and use squash merge for a clean reviewable history.
 - Require signed commits if your local setup supports it consistently.
 
 Required checks once they have run at least once:

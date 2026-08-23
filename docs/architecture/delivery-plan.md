@@ -45,6 +45,6 @@ Add append-only admin audit records, structured logs, metrics, dashboards, runbo
 
 Build signed/scanned container images, SBOM/provenance, environment promotion, smoke tests and rollback procedure.
 
-## PR 10 - portfolio polish
+## PR 10 - release readiness and documentation
 
 Architecture diagrams, threat model, engineering trade-offs, screenshots, demo video, performance/a11y evidence and a concise case-study README.

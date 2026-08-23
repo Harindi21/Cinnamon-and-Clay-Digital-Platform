@@ -12,8 +12,8 @@ docker compose --env-file .env -f infra/compose.yaml ps
 
 ```powershell
 Set-Location backend
-$env:DB_URL = "jdbc:postgresql://localhost:5432/kirikopi"
-$env:DB_USER = "kirikopi"
+$env:DB_URL = "jdbc:postgresql://localhost:5432/cinnamon_clay"
+$env:DB_USER = "cinnamon_clay"
 $env:DB_PASSWORD = "change-me-locally"
 mvn spring-boot:run
 ```
@@ -35,7 +35,7 @@ Generate platform folders once:
 
 ```powershell
 Set-Location admin-flutter
-flutter create --platforms=windows,android,web --project-name kirikopi_cafe_admin .
+flutter create --platforms=windows,android,web --project-name cinnamon_clay_admin .
 ```
 
 Restore repository-owned source files if `flutter create` replaced them, then:
