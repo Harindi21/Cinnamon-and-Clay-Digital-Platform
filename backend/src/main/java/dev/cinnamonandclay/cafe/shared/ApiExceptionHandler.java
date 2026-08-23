@@ -21,6 +21,15 @@ class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
+    private static String sanitizeForLog(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace('\r', ' ')
+                .replace('\n', ' ');
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     ProblemDetail handleNotFound(
             ResourceNotFoundException exception,
@@ -63,10 +72,12 @@ class ApiExceptionHandler {
             DataIntegrityViolationException exception,
             HttpServletRequest request
     ) {
+        String method = sanitizeForLog(request.getMethod());
+        String requestUri = sanitizeForLog(request.getRequestURI());
         log.info(
                 "Rejected request because a uniqueness or relational constraint was violated: {} {}",
-                request.getMethod(),
-                request.getRequestURI()
+                method,
+                requestUri
         );
 
         ProblemDetail detail = ProblemDetail.forStatusAndDetail(
@@ -112,10 +123,12 @@ class ApiExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
+        String method = sanitizeForLog(request.getMethod());
+        String requestUri = sanitizeForLog(request.getRequestURI());
         log.error(
                 "Unexpected request failure: {} {}",
-                request.getMethod(),
-                request.getRequestURI(),
+                method,
+                requestUri,
                 exception
         );
 
