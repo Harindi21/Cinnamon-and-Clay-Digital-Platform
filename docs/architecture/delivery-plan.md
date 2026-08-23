@@ -1,4 +1,4 @@
-# Delivery plan - PR-sized learning sequence
+# Delivery plan - PR-sized delivery sequence
 
 ## PR 01 - repository foundation
 

@@ -3,6 +3,8 @@ import 'package:cinnamon_clay_admin/src/auth/auth_models.dart';
 import 'package:cinnamon_clay_admin/src/auth/auth_repository.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
+import 'package:cinnamon_clay_admin/src/reviews/review_models.dart';
+import 'package:cinnamon_clay_admin/src/reviews/review_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -40,6 +42,7 @@ void main() {
             _FakeAuthRepository(const AuthState.authenticated(identity)),
           ),
           catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
+          reviewsProvider.overrideWith((ref) async => const <AdminReview>[]),
         ],
         child: const CinnamonClayAdminApp(),
       ),
@@ -47,7 +50,13 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Catalog'), findsOneWidget);
+    expect(find.text('Catalog'), findsWidgets);
+    expect(find.text('Reviews'), findsOneWidget);
+
+    await tester.tap(find.text('Reviews'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No reviews yet.'), findsOneWidget);
   });
 }
 

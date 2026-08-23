@@ -1,12 +1,15 @@
 package dev.cinnamonandclay.cafe.catalog;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "menu_item")
@@ -40,7 +43,69 @@ class MenuItemEntity {
     @Column(nullable = false)
     private long version;
 
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
     protected MenuItemEntity() {
+    }
+
+    static MenuItemEntity create(
+            UUID categoryId,
+            String name,
+            String description,
+            long priceMinor,
+            String currency,
+            int sortOrder,
+            boolean active
+    ) {
+        MenuItemEntity item = new MenuItemEntity();
+        item.id = UUID.randomUUID();
+        item.categoryId = categoryId;
+        item.name = name;
+        item.description = description;
+        item.priceMinor = priceMinor;
+        item.currency = currency;
+        item.sortOrder = sortOrder;
+        item.active = active;
+        item.version = 0;
+        return item;
+    }
+
+    void update(
+            UUID categoryId,
+            String name,
+            String description,
+            long priceMinor,
+            String currency,
+            int sortOrder,
+            boolean active
+    ) {
+        this.categoryId = categoryId;
+        this.name = name;
+        this.description = description;
+        this.priceMinor = priceMinor;
+        this.currency = currency;
+        this.sortOrder = sortOrder;
+        this.active = active;
+    }
+
+    void deactivate() {
+        active = false;
+    }
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
     }
 
     UUID id() {
@@ -69,5 +134,13 @@ class MenuItemEntity {
 
     int sortOrder() {
         return sortOrder;
+    }
+
+    boolean active() {
+        return active;
+    }
+
+    long version() {
+        return version;
     }
 }

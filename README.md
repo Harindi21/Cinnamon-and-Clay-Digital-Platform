@@ -77,7 +77,14 @@ The catalog supports:
 * active/inactive records;
 * integer minor-unit money representation;
 * currency codes;
-* optimistic version fields for future administrator writes.
+* authenticated administrator create/edit/hide/reorder flows;
+* optimistic concurrency protection for administrator writes.
+
+### Reviews
+
+Reviews support an editorial lifecycle with administrator moderation.
+
+The administrator application can create, edit, publish and hide reviews while the public API exposes only published records. Review writes use optimistic concurrency protection.
 
 ### Content and contact information
 
@@ -420,9 +427,10 @@ The project follows several defence-in-depth practices, including:
 * server-side validation;
 * database constraints;
 * separation of public and administrative capabilities;
-* planned OIDC-based administrator authentication and authorization.
+* OIDC-based administrator authentication and server-side role authorization;
+* optimistic concurrency checks for administrator catalog writes.
 
-Administrative write operations are not exposed publicly.
+Administrative write operations are isolated under authenticated `/api/v1/admin/**` endpoints.
 
 ---
 

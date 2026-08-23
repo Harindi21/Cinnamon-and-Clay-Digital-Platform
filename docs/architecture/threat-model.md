@@ -27,13 +27,19 @@
 - native clients use Authorization Code with PKCE;
 - the API validates JWT issuer, signature, lifetime and audience;
 - privileged API routes enforce server-side RBAC;
+- CSRF checks remain enabled generally; the stateless bearer-token administrator API path is explicitly excluded because it does not use cookie authentication;
 - authorization uses roles belonging specifically to the Cinnamon & Clay API client;
 - the resource server is stateless and does not persist access tokens.
 
+## Implemented write controls
+
+- administrator write endpoints use explicit request DTO allow-lists and bean validation;
+- catalog and review writes use optimistic concurrency versions to prevent silent lost updates;
+- public visibility is controlled server-side rather than trusted to Flutter UI state;
+- destructive catalog/review actions use reversible hide/deactivate state instead of physical deletion.
+
 ## Controls backlog
 
-- OIDC + least-privilege RBAC
-- DTO allow-lists and bean validation
 - output escaping and content restrictions
 - upload MIME/size/dimension validation
 - parameterized persistence APIs
