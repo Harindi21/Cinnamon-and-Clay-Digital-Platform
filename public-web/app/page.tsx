@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { connection } from 'next/server';
+import { getPublicReviews } from '@/lib/reviews';
 
 import { formatMoney, getMenu } from '@/lib/catalog';
 import {
@@ -15,17 +16,19 @@ import {
 export default async function Home() {
   await connection();
 
-  const [
-    menu,
-    content,
-    contact,
-    media
-  ] = await Promise.all([
-    getMenu(),
-    getSiteContent(),
-    getContact(),
-    getPublicMedia()
-  ]);
+const [
+  menu,
+  content,
+  contact,
+  media,
+  reviewData
+] = await Promise.all([
+  getMenu(),
+  getSiteContent(),
+  getContact(),
+  getPublicMedia(),
+  getPublicReviews()
+]);
 
   const whatsAppUrl = whatsappHref(contact.whatsapp);
 
@@ -206,6 +209,57 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+{/* Reviews */}
+{reviewData.reviews.length > 0 && (
+  <section
+    id="reviews"
+    className="section reviewsSection"
+  >
+    <div className="shell">
+      <div className="sectionHeading">
+        <p className="sectionKicker">
+          Kind words
+        </p>
+
+        <h2>What People Say</h2>
+      </div>
+
+      <div className="reviewsGrid">
+        {reviewData.reviews.map(
+          (review) => (
+            <article
+              className="reviewCard"
+              key={review.id}
+            >
+              <div
+                className="reviewStars"
+                aria-label={
+                  `${review.rating} out of 5 stars`
+                }
+              >
+                <span aria-hidden="true">
+                  {'★'.repeat(review.rating)}
+                  {'☆'.repeat(
+                    5 - review.rating
+                  )}
+                </span>
+              </div>
+
+              <blockquote>
+                “{review.body}”
+              </blockquote>
+
+              <p className="reviewAuthor">
+                — {review.authorName}
+              </p>
+            </article>
+          )
+        )}
+      </div>
+    </div>
+  </section>
+)}
 
       {/* Visit */}
       <section
