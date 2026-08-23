@@ -1,8 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:cinnamon_clay_admin/src/app.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('app starts on catalog page', (tester) async {

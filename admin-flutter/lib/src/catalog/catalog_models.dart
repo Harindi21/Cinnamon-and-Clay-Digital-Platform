@@ -5,9 +5,9 @@ class Money {
   final String currency;
 
   factory Money.fromJson(Map<String, dynamic> json) => Money(
-        amountMinor: json['amountMinor'] as int,
-        currency: json['currency'] as String,
-      );
+    amountMinor: json['amountMinor'] as int,
+    currency: json['currency'] as String,
+  );
 }
 
 class MenuItem {
@@ -24,25 +24,29 @@ class MenuItem {
   final Money price;
 
   factory MenuItem.fromJson(Map<String, dynamic> json) => MenuItem(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        description: json['description'] as String,
-        price: Money.fromJson(json['price'] as Map<String, dynamic>),
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    description: json['description'] as String,
+    price: Money.fromJson(json['price'] as Map<String, dynamic>),
+  );
 }
 
 class MenuCategory {
-  const MenuCategory({required this.id, required this.name, required this.items});
+  const MenuCategory({
+    required this.id,
+    required this.name,
+    required this.items,
+  });
 
   final String id;
   final String name;
   final List<MenuItem> items;
 
   factory MenuCategory.fromJson(Map<String, dynamic> json) => MenuCategory(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        items: (json['items'] as List<dynamic>)
-            .map((item) => MenuItem.fromJson(item as Map<String, dynamic>))
-            .toList(growable: false),
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    items: (json['items'] as List<dynamic>)
+        .map((item) => MenuItem.fromJson(item as Map<String, dynamic>))
+        .toList(growable: false),
+  );
 }
