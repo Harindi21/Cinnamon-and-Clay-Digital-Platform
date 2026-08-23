@@ -1,10 +1,13 @@
 import { formatMoney, getMenu } from '@/lib/catalog';
+import { connection } from 'next/server';
 import {
   getContact,
   getSiteContent,
   whatsappHref
 } from '@/lib/site';
 export default async function Home() {
+  await connection();
+
   const [menu, content, contact] = await Promise.all([
     getMenu(),
     getSiteContent(),

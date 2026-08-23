@@ -39,9 +39,6 @@ jobs:
         run: npm run lint
       - name: Build
         working-directory: public-web
-        env:
-          BACKEND_INTERNAL_URL: http://127.0.0.1:8080
-          SKIP_BACKEND_FETCH_DURING_BUILD: 'true'
         run: npm run build
 
   admin-flutter:

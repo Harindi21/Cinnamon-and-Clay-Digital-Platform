@@ -38,40 +38,12 @@ export type Contact = {
   }[];
 };
 
-const buildContentFallback: SiteContent = {
-  brand: {
-    name: 'Kirikopi',
-    tagline: 'Slow coffee. Warm bakes. Good company.',
-    heroNote: 'A neighbourhood coffee house in the heart of Colombo.'
-  },
-  menuNote: 'Prices in Sri Lankan Rupees.',
-  about: {
-    title: 'Our little story',
-    paragraphs: [],
-    features: []
-  }
-};
-
-const buildContactFallback: Contact = {
-  address: '',
-  phone: '',
-  email: '',
-  mapEmbedUrl: '',
-  hours: [],
-  whatsapp: {
-    enabled: false,
-    number: null,
-    prefill: ''
-  },
-  socialLinks: []
-};
-
 export function getSiteContent(): Promise<SiteContent> {
-  return backendGet('/api/v1/content/site', buildContentFallback);
+  return backendGet<SiteContent>('/api/v1/content/site');
 }
 
 export function getContact(): Promise<Contact> {
-  return backendGet('/api/v1/contact', buildContactFallback);
+  return backendGet<Contact>('/api/v1/contact');
 }
 
 export function whatsappHref(

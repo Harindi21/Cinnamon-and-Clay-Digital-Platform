@@ -24,13 +24,8 @@ export type MenuResponse = {
   categories: MenuCategory[];
 };
 
-const emptyMenu: MenuResponse = {
-  defaultCurrency: 'LKR',
-  categories: []
-};
-
 export function getMenu(): Promise<MenuResponse> {
-  return backendGet('/api/v1/catalog/menu', emptyMenu);
+  return backendGet<MenuResponse>('/api/v1/catalog/menu');
 }
 
 export function formatMoney(money: Money): string {
