@@ -13,7 +13,7 @@ The authorization model should remain small enough to understand and audit while
 
 ## Decision
 
-Define authorization roles against the `kirikopi-api` OIDC resource client.
+Define authorization roles against the `cinnamon-clay-api` OIDC resource client.
 
 The initial roles are:
 
@@ -21,7 +21,7 @@ The initial roles are:
 
 `admin` permits full administrative operations and may be required for security-sensitive capabilities introduced later.
 
-Keycloak places these roles in the access token under the `resource_access.kirikopi-api.roles` claim.
+Keycloak places these roles in the access token under the `resource_access.cinnamon-clay-api.roles` claim.
 
 The Spring API maps them to `ROLE_EDITOR` and `ROLE_ADMIN`.
 
@@ -35,13 +35,13 @@ The API is the source of truth for authorization.
 
 Client-side Flutter route guards and hidden controls exist only for user experience and are never treated as security controls.
 
-JWT validation includes the expected `kirikopi-api` audience.
+JWT validation includes the expected `cinnamon-clay-api` audience.
 
 ## Consequences
 
 Authorization rules are centralized at the API boundary.
 
-Roles issued for unrelated OIDC clients cannot grant Kirikopi API permissions.
+Roles issued for unrelated OIDC clients cannot grant Cinnamon & Clay API permissions.
 
 Adding new administrator roles requires an explicit authorization-model change rather than silently deriving permissions from UI behaviour.
 

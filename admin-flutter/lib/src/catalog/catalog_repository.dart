@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kirikopi_cafe_admin/src/catalog/catalog_models.dart';
-import 'package:kirikopi_cafe_admin/src/core/api_client.dart';
+import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
+import 'package:cinnamon_clay_admin/src/core/api_client.dart';
 
 final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
   return CatalogRepository(ref.watch(apiClientProvider));

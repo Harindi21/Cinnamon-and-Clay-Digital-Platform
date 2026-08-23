@@ -4,20 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cafe</title>
-<meta name="robots" content="noindex, nofollow">
 
+<!-- ============================================================
+     ☕ CAFE WEBSITE TEMPLATE — CONFIG
+     ============================================================
+     EDIT ONLY THIS BLOCK TO CUSTOMIZE FOR A NEW CAFE.
+     Everything below the config is the engine — no need to touch it.
+     ============================================================ -->
 <script>
 const CONFIG = {
 
   /* ---------- 1. BRAND ---------- */
-  name: "Kirikopi",
+  name: "Cinnamon & Clay",
   tagline: "Slow coffee. Warm bakes. Good company.",
+  // Short intro shown in the hero under the tagline:
   heroNote: "A neighbourhood coffee house in the heart of Colombo.",
-  logoUrl: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM1QzNBMjEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQzQ4MjNCIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0OCIgZmlsbD0idXJsKCNnKSIvPgogIDxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjQ2LjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZCRjZFRiIgc3Ryb2tlLXdpZHRoPSIxLjQiIG9wYWNpdHk9IjAuNCIvPgogIDxwYXRoIGQ9Ik0zOSAyMSBDIDM2LjUgMTcsIDQxIDEzLjUsIDM4LjUgOSIgc3Ryb2tlPSIjRkJGNkVGIiBzdHJva2Utd2lkdGg9IjIuNCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNTAgMTkgQyA0Ny41IDE1LCA1MiAxMS41LCA0OS41IDciIHN0cm9rZT0iI0ZCRjZFRiIgc3Ryb2tlLXdpZHRoPSIyLjQiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ii8+CiAgPHBhdGggZD0iTTYxIDIxIEMgNTguNSAxNywgNjMgMTMuNSwgNjAuNSA5IiBzdHJva2U9IiNGQkY2RUYiIHN0cm9rZS13aWR0aD0iMi40IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI3MCIgZm9udC1mYW1pbHk9IidGcmF1bmNlcycsIEdlb3JnaWEsICdUaW1lcyBOZXcgUm9tYW4nLCBzZXJpZiIgZm9udC1zaXplPSI1MCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iI0ZCRjZFRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SzwvdGV4dD4KICA8cGF0aCBkPSJNMjggNzggUSA1MCA5MiA3MiA3OCIgc3Ryb2tlPSIjRkJGNkVGIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC41NSIvPgo8L3N2Zz4K",
+  // Logo image URL. Leave "" to show a text logo (cafe name) instead:
+  logoUrl: "",
+  // Emoji/mark used next to the text logo:
   logoMark: "☕",
-  //comment for kirikopi's logo
-  wordmarkWhiteUrl: "data:image/png;base64,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",
-  wordmarkBrownUrl: "data:image/png;base64,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",
 
   /* ---------- 2. COLORS (theme) ---------- */
   theme: {
@@ -33,24 +38,23 @@ const CONFIG = {
   /* ---------- 3. IMAGES ---------- */
   images: {
     hero:  "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1600&q=80&auto=format&fit=crop",
-    about: "https://images.unsplash.com/photo-1744595805485-5ed5de517e28?w=900&q=80&auto=format&fit=crop",
+    about: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=900&q=80&auto=format&fit=crop",
     gallery: [
-      "https://images.unsplash.com/photo-1621523132966-19f711d565d1?w=700&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1749280447307-31a68eb38673?w=700&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1560180474-e8563fd75bab?w=700&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1761027101409-fa96d88349c7?w=700&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1684403620650-81dc661a69db?auto=format&fit=crop&w=700&h=700&q=80",
-      "https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&w=700&h=700&q=80",
-
-]
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=700&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=700&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=700&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=700&q=80&auto=format&fit=crop"
+    ]
   },
 
   /* ---------- 4. ABOUT ---------- */
   about: {
     title: "Our little story",
     paragraphs: [
-      "We can add Kirikopi's story here once you accept us. Until then it would be lorem ipusm. Lorem ipsum lorem ipsum lorem ipusm lorem ipsum lorem ipusm lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum.",
-      "Lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum, lorem ipsum lorem ipsum lorem ipsum lorem ipsum lorem ipsum."
+      "Cinnamon & Clay began with one espresso machine, a family recipe for cinnamon rolls, and a stubborn belief that Colombo deserves coffee worth slowing down for.",
+      "Every bean is roasted locally, every bake comes out of our own oven each morning, and every guest gets a table for as long as they need it."
     ],
     features: [
       { icon: "🌱", title: "Locally roasted", text: "Beans from Sri Lankan highland roasters, ground to order." },
@@ -104,15 +108,16 @@ const CONFIG = {
   reviews: [
     { stars: 5, text: "Best cinnamon rolls in Colombo, hands down. The coffee is a bonus.", name: "Dinithi P." },
     { stars: 5, text: "Quiet, cosy, great Wi-Fi. I basically work from here now.", name: "Ashan W." },
-    { stars: 4, text: "Lovely spot for a slow Sunday breakfast. Staff are so warm.", name: "Savindu B." }
+    { stars: 4, text: "Lovely spot for a slow Sunday breakfast. Staff are so warm.", name: "Sarah F." }
   ],
 
   /* ---------- 7. VISIT (location, hours, contact) ---------- */
   visit: {
-    address: "76/1 Flower Rd, Colombo 7,, Sri Lanka",
-    phone: "011 111 111",
-    email: "hello@kirikopi.lk",
-    mapEmbed: "https://www.google.com/maps?q=Kirikopi,+Colombo,+Sri+Lanka&output=embed",
+    address: "42 Flower Road, Colombo 07, Sri Lanka",
+    phone: "+94 77 123 4567",
+    email: "hello@cinnamonandclay.lk",
+    // Google Maps: share > embed a map > copy the src="..." URL:
+    mapEmbed: "https://www.google.com/maps?q=Colombo+07,+Sri+Lanka&output=embed",
     hours: [
       { day: "Monday – Friday", time: "7.30 am – 7.00 pm" },
       { day: "Saturday",        time: "8.00 am – 9.00 pm" },
@@ -123,7 +128,7 @@ const CONFIG = {
   /* ---------- 8. WHATSAPP ORDERING ---------- */
   whatsapp: {
     enabled: true,
-    number: "011 111 111", 
+    number: "94771234567",   // country code, no + or spaces
     prefill: "Hi! I'd like to place an order 🙂"
   },
 
@@ -131,13 +136,13 @@ const CONFIG = {
   social: {
     instagram: "https://instagram.com/",
     facebook:  "https://facebook.com/",
-    tiktok:    "https://tiktok.com/"           
+    tiktok:    ""            // leave "" to hide
   },
 
-  /* ---------- 10. FOOTER CREDIT  ---------- */
+  /* ---------- 10. FOOTER CREDIT (your branding!) ---------- */
   credit: {
-    label: "Concept preview by Planetory",
-    url: "mailto:helloplanetory@gmail.com"
+    label: "Site crafted by Hari",
+    url: "mailto:eranthikah999@gmail.com"
   }
 };
 </script>
@@ -147,7 +152,9 @@ const CONFIG = {
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
+/* ============================================================
+   ENGINE — you shouldn't need to edit below this line
+   ============================================================ */
 :root{
   --bg:#FBF6EF; --surface:#fff; --ink:#2C1E14; --muted:#7C6A5C;
   --primary:#5C3A21; --accent:#C4823B; --overlay:rgba(30,18,10,.55);
@@ -176,14 +183,7 @@ nav.scrolled{background:var(--bg);box-shadow:0 2px 20px rgba(44,30,20,.1);paddin
 .nav-inner{display:flex;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:600;font-size:1.35rem;color:#fff;transition:color .3s}
 nav.scrolled .brand{color:var(--primary)}
-/* comment for kirikopi's logo */
-.brand img{width:auto}
-.brand-icon{height:40px;border-radius:8px}
-.brand-wordmark{height:38px;border-radius:0}
-.brand-wordmark-brown{display:none}
-nav.scrolled .brand-wordmark-white{display:none}
-nav.scrolled .brand-wordmark-brown{display:block}
-/* */
+.brand img{height:40px;width:auto;border-radius:8px}
 .nav-links{display:flex;gap:28px;list-style:none;font-size:.92rem;font-weight:500}
 .nav-links a{color:rgba(255,255,255,.92);transition:color .2s}
 nav.scrolled .nav-links a{color:var(--ink)}
@@ -211,10 +211,6 @@ header::before{content:"";position:absolute;inset:0;background:var(--overlay)}
   margin-bottom:26px;background:rgba(0,0,0,.15);backdrop-filter:blur(4px);
 }
 .hero-content h1{font-size:clamp(2.6rem,7vw,4.8rem);font-weight:600;line-height:1.08;margin-bottom:18px}
-/* comment for kirikopi's logo */
-.hero-content .hero-title{font-size:0;line-height:1;margin-bottom:24px}
-.hero-wordmark{display:block;width:clamp(130px,18vw,220px);height:auto;margin:0 auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.25))}
-/* */
 .hero-content p{font-size:clamp(1.02rem,2.2vw,1.25rem);color:rgba(255,255,255,.9);max-width:560px;margin:0 auto 34px}
 .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .btn{
@@ -290,8 +286,6 @@ header::before{content:"";position:absolute;inset:0;background:var(--overlay)}
 /* ---------- footer ---------- */
 footer{background:var(--primary);color:rgba(255,255,255,.85);padding:44px 0;text-align:center}
 footer .fbrand{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;color:#fff}
-/*  comment for kirikopi's logo */
-footer .fbrand img{display:block;height:72px;width:auto;margin:0 auto}
 .socials{display:flex;gap:18px;justify-content:center;margin:18px 0}
 .socials a{
   width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -329,14 +323,9 @@ footer .credit a{text-decoration:underline}
   .about-grid,.visit-grid,.menu-grid{grid-template-columns:1fr}
   .about-img{aspect-ratio:4/3}
   .features{grid-template-columns:1fr}
-.gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid{grid-template-columns:repeat(2,1fr)}
   .reviews-grid{grid-template-columns:1fr}
-  .hero-kicker{
-    border-radius:14px;font-size:.66rem;letter-spacing:.14em;
-    padding:10px 16px;line-height:1.55;max-width:88%;
-  }
 }
-
 </style>
 </head>
 <body>
@@ -358,8 +347,7 @@ footer .credit a{text-decoration:underline}
 <header id="top">
   <div class="hero-content">
     <span class="hero-kicker" id="heroNote"></span>
-    <!-- comment for kirikopi's logo -->
-    <h1 class="hero-title"><img id="heroWordmark" class="hero-wordmark" alt="Kirikopi"></h1>
+    <h1 id="heroName"></h1>
     <p id="heroTagline"></p>
     <div class="hero-cta">
       <a href="#menu" class="btn btn-solid">View Menu</a>
@@ -373,10 +361,7 @@ footer .credit a{text-decoration:underline}
   <div class="container about-grid">
     <div class="about-img reveal" style="background:linear-gradient(135deg,var(--primary),var(--accent))"><img id="aboutImg" alt="Inside the cafe" onerror="this.remove()"></div>
     <div class="about-text reveal">
-      <!-- comment for kirikopi's logo -->
-      <span class="sec-head" style=
-      "text-align:left;margin:0"><span class="kicker">Who we are</span></span>
-      <!-- comment for kirikopi's logo -->
+      <span class="sec-head" style="text-align:left;margin:0"><span class="kicker">Who we are</span></span>
       <h2 id="aboutTitle"></h2>
       <div id="aboutParas"></div>
       <div class="features" id="features"></div>
@@ -412,9 +397,9 @@ footer .credit a{text-decoration:underline}
     <div class="visit-grid">
       <div class="map-wrap reveal"><iframe id="mapFrame" loading="lazy" title="Map"></iframe></div>
       <div class="visit-info reveal">
-        <div class="vi-block"><h3>Address</h3><p id="viAddress"></p></div>
-        <div class="vi-block"><h3>Opening Hours</h3><div id="viHours"></div></div>
-        <div class="vi-block"><h3>Contact</h3><p><a id="viPhone"></a><br><a id="viEmail"></a></p></div>
+        <div class="vi-block"><h3>📍 Address</h3><p id="viAddress"></p></div>
+        <div class="vi-block"><h3>🕒 Opening Hours</h3><div id="viHours"></div></div>
+        <div class="vi-block"><h3>📞 Contact</h3><p><a id="viPhone"></a><br><a id="viEmail"></a></p></div>
       </div>
     </div>
   </div>
@@ -434,7 +419,9 @@ footer .credit a{text-decoration:underline}
 </a>
 
 <script>
-
+/* ============================================================
+   RENDER ENGINE — reads CONFIG and builds the page
+   ============================================================ */
 (function(){
   const C = CONFIG, $ = id => document.getElementById(id);
 
@@ -447,21 +434,14 @@ footer .credit a{text-decoration:underline}
   document.title = C.name + " — " + C.tagline;
 
   /* brand + hero */
-   //comment for kirikopi's logo
-  $('brand').setAttribute('aria-label', C.name);
-  $('brand').innerHTML = `
-    <img class="brand-icon" src="${C.logoUrl}" alt="">
-    <img class="brand-wordmark brand-wordmark-white" src="${C.wordmarkWhiteUrl}" alt="">
-    <img class="brand-wordmark brand-wordmark-brown" src="${C.wordmarkBrownUrl}" alt="" aria-hidden="true">`;
-     //comment for kirikopi's logo
-     const header = document.querySelector('header');
+  $('brand').innerHTML = C.logoUrl
+    ? `<img src="${C.logoUrl}" alt="${C.name} logo"><span>${C.name}</span>`
+    : `<span>${C.logoMark}</span><span>${C.name}</span>`;
+  const header = document.querySelector('header');
   header.style.backgroundImage = `url('${C.images.hero}'), linear-gradient(150deg, ${t.primary}, ${t.ink})`;
   header.style.backgroundSize = 'cover, cover';
   $('heroNote').textContent = C.heroNote;
-     //comment for kirikopi's logo
-  $('heroWordmark').src = C.wordmarkWhiteUrl;
-  $('heroWordmark').alt = C.name;
-     //comment for kirikopi's logo
+  $('heroName').textContent = C.name;
   $('heroTagline').textContent = C.tagline;
 
   /* about */
@@ -483,7 +463,7 @@ footer .credit a{text-decoration:underline}
         </div>`).join('')}
     </div>`).join('');
 
-  /* gallery */
+  /* gallery (with graceful fallback if an image fails) */
   $('galleryGrid').innerHTML = C.images.gallery.map(src=>
     `<div class="g-item reveal"><img src="${src}" alt="Cafe photo" onerror="this.remove()"></div>`).join('');
 
@@ -503,16 +483,11 @@ footer .credit a{text-decoration:underline}
   const em = $('viEmail'); em.textContent = C.visit.email; em.href = 'mailto:' + C.visit.email;
 
   /* footer */
-  //comment for kirikopi's logo
-  $('footBrand').innerHTML = `<img src="${C.wordmarkWhiteUrl}" alt="${C.name}">`;
+  $('footBrand').textContent = C.name;
   $('footCopy').textContent = `© ${new Date().getFullYear()} ${C.name}. All rights reserved.`;
   if (C.credit && C.credit.label)
     $('footCredit').innerHTML = `<a href="${C.credit.url}" target="_blank" rel="noopener">${C.credit.label}</a>`;
-  const socIcons = {
-    instagram: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
-    facebook: '<svg width="12" height="19" viewBox="0 0 320 512" fill="#fff"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/></svg>',
-    tiktok: '<svg width="18" height="18" viewBox="0 0 16 16" fill="#fff"><path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3z"/></svg>'
-  };
+  const socIcons = { instagram:'📸', facebook:'👍', tiktok:'🎵' };
   $('socials').innerHTML = Object.entries(C.social)
     .filter(([,url])=>url)
     .map(([k,url])=>`<a href="${url}" target="_blank" rel="noopener" title="${k}">${socIcons[k]||'🔗'}</a>`).join('');

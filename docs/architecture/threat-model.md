@@ -27,7 +27,7 @@
 - native clients use Authorization Code with PKCE;
 - the API validates JWT issuer, signature, lifetime and audience;
 - privileged API routes enforce server-side RBAC;
-- authorization uses roles belonging specifically to the Kirikopi API client;
+- authorization uses roles belonging specifically to the Cinnamon & Clay API client;
 - the resource server is stateless and does not persist access tokens.
 
 ## Controls backlog

@@ -6,7 +6,7 @@ From the repository root:
 
 ```powershell
 Set-Location admin-flutter
-flutter create --platforms=windows,android,web --project-name kirikopi_cafe_admin .
+flutter create --platforms=windows,android,web --project-name cinnamon_clay_admin .
 flutter pub get
 flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080
 ```

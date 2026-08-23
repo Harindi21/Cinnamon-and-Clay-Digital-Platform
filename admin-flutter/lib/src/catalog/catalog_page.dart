@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kirikopi_cafe_admin/src/catalog/catalog_repository.dart';
+import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
 
 class CatalogPage extends ConsumerWidget {
   const CatalogPage({super.key});

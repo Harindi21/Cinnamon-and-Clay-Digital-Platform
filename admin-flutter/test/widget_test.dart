@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kirikopi_cafe_admin/src/app.dart';
-import 'package:kirikopi_cafe_admin/src/catalog/catalog_models.dart';
-import 'package:kirikopi_cafe_admin/src/catalog/catalog_repository.dart';
+import 'package:cinnamon_clay_admin/src/app.dart';
+import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
+import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
 
 void main() {
   testWidgets('app starts on catalog page', (tester) async {
@@ -11,7 +11,7 @@ void main() {
         overrides: [
           catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
         ],
-        child: const KirikopiAdminApp(),
+        child: const CinnamonClayAdminApp(),
       ),
     );
 

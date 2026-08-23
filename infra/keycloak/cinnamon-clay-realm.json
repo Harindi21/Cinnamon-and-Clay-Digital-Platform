@@ -1,0 +1,129 @@
+{
+  "realm": "cinnamon-clay",
+  "enabled": true,
+  "displayName": "Cinnamon & Clay",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": false,
+  "roles": {
+    "client": {
+      "cinnamon-clay-api": [
+        {
+          "name": "editor",
+          "description": "Manage cafe content and operational data",
+          "composite": false,
+          "clientRole": true
+        },
+        {
+          "name": "admin",
+          "description": "Full Cinnamon & Clay administration access",
+          "composite": false,
+          "clientRole": true
+        }
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "cinnamon-clay-api",
+      "name": "Cinnamon & Clay API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    },
+    {
+      "clientId": "cinnamon-clay-admin-mobile",
+      "name": "Cinnamon & Clay Admin Mobile",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "redirectUris": [
+        "dev.cinnamonandclay.admin:/oauthredirect"
+      ],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "dev.cinnamonandclay.admin:/oauthredirect"
+      },
+      "protocolMappers": [
+        {
+          "name": "cinnamon-clay-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "cinnamon-clay-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "local.admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Local",
+      "lastName": "Admin",
+      "email": "local.admin@cinnamonandclay.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_ADMIN_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "cinnamon-clay-api": [
+          "admin"
+        ]
+      }
+    },
+    {
+      "username": "local.editor",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Local",
+      "lastName": "Editor",
+      "email": "local.editor@cinnamonandclay.test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${KEYCLOAK_DEMO_EDITOR_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "cinnamon-clay-api": [
+          "editor"
+        ]
+      }
+    }
+  ]
+}

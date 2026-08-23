@@ -1,6 +1,6 @@
 # Current persistent data model
 
-Kirikopi stores structured business data in PostgreSQL.
+Cinnamon & Clay stores structured business data in PostgreSQL.
 
 Media binary content is stored in object storage. PostgreSQL stores only media metadata and object keys.
 
