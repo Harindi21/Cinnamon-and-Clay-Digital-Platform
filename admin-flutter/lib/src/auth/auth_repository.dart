@@ -46,9 +46,9 @@ class OidcAuthRepository implements AuthRepository {
     required FlutterAppAuth appAuth,
     required AuthTokenStore tokenStore,
     required Dio identityClient,
-  }) : _appAuth = appAuth,
-       _tokenStore = tokenStore,
-       _identityClient = identityClient;
+  }) : this._(appAuth, tokenStore, identityClient);
+
+  OidcAuthRepository._(this._appAuth, this._tokenStore, this._identityClient);
 
   static const Duration _refreshWindow = Duration(seconds: 60);
   static const List<String> _scopes = <String>['openid', 'profile', 'email'];
