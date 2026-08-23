@@ -1,10 +1,9 @@
-// SocialLinkRepository.java
 package dev.cinnamonandclay.cafe.contact;
-
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
 
 interface SocialLinkRepository
         extends JpaRepository<SocialLinkEntity, UUID> {
@@ -12,5 +11,21 @@ interface SocialLinkRepository
     List<SocialLinkEntity>
     findByContactProfileIdAndActiveTrueOrderBySortOrderAsc(
             UUID contactProfileId
+    );
+
+    List<SocialLinkEntity>
+    findByContactProfileIdOrderBySortOrderAscIdAsc(
+            UUID contactProfileId
+    );
+
+    boolean existsByContactProfileIdAndPlatformIgnoreCase(
+            UUID contactProfileId,
+            String platform
+    );
+
+    boolean existsByContactProfileIdAndPlatformIgnoreCaseAndIdNot(
+            UUID contactProfileId,
+            String platform,
+            UUID id
     );
 }

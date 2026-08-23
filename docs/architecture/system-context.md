@@ -21,4 +21,4 @@ flowchart TB
   API -->|JWT validation / claims| IdP
 ```
 
-The initial slice implements Web -> API -> PostgreSQL for catalog reads. Dashed/future concerns are recorded as proposed ADRs before code is added.
+The implemented platform supports public REST reads from Next.js and authenticated administrator reads/writes from Flutter. PostgreSQL stores structured business data, S3-compatible storage backs the media read path, and OIDC provides administrator identity. Remaining production-readiness work is tracked in `implementation-status.md`.

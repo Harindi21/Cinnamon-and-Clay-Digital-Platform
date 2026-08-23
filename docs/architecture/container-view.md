@@ -17,7 +17,8 @@ Spring Boot]
     REVIEWS[Reviews module]
     CONTACT[Contact module]
     MEDIA[Media module]
-    AUDIT[Audit module]
+    AUDIT[Audit module
+planned]
   end
 
   DB[(PostgreSQL)]

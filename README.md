@@ -96,7 +96,8 @@ Cafe content is managed as structured data, including:
 * contact details;
 * opening hours;
 * social links;
-* WhatsApp configuration.
+* WhatsApp configuration;
+* authenticated Flutter management of brand/about/contact/hours/social settings with optimistic concurrency.
 
 ### Media
 
@@ -104,14 +105,7 @@ Media metadata is stored in PostgreSQL while image binaries are stored in S3-com
 
 Local development uses MinIO.
 
-Managed media currently supports:
-
-* hero images;
-* about-section images;
-* gallery images;
-* alternative text;
-* display ordering;
-* active/inactive state.
+The implemented media read path supports hero, about-section and gallery metadata plus S3-compatible binary streaming. Administrator upload/update/delete flows, upload hardening, image processing and orphan cleanup remain planned; see `docs/architecture/implementation-status.md`.
 
 ---
 
@@ -256,21 +250,9 @@ Verify the catalog API:
 Invoke-RestMethod http://localhost:8080/api/v1/catalog/menu
 ```
 
-### Seed local media
+### Media during local development
 
-After the backend has started and Flyway migrations have completed:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File tools/seed-local-media.ps1
-```
-
-See:
-
-```text
-docs/runbooks/local-media-seeding.md
-```
-
-for details.
+The current repository does not yet include an administrator media-upload flow or a local media seeding script. The public website works without media records and renders the text/content sections normally. Media administration is tracked as remaining work in `docs/architecture/implementation-status.md`.
 
 ### Run the public website
 
@@ -428,7 +410,7 @@ The project follows several defence-in-depth practices, including:
 * database constraints;
 * separation of public and administrative capabilities;
 * OIDC-based administrator authentication and server-side role authorization;
-* optimistic concurrency checks for administrator catalog writes.
+* optimistic concurrency checks for administrator-managed catalog, review, content and contact writes.
 
 Administrative write operations are isolated under authenticated `/api/v1/admin/**` endpoints.
 
@@ -445,7 +427,6 @@ docs/runbooks
 Runbooks cover areas such as:
 
 * local environment setup;
-* media seeding;
 * repository rules;
 * database operations;
 * backup and recovery procedures.

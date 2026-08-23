@@ -18,6 +18,7 @@ Administrator-managed mutable records carry a numeric `version` field backed by 
 Read models returned to the administrator application include the current version.
 
 Update and deactivate requests send the version that was originally loaded.
+Update request contracts require the version field explicitly; an omitted version is a validation error and must not silently default to version `0`.
 
 The API compares the supplied version with the current persisted version before applying a change. A mismatch returns HTTP `409 Conflict` using the problem type:
 
