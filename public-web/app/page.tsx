@@ -1,17 +1,30 @@
-import { formatMoney, getMenu } from '@/lib/catalog';
+import Image from 'next/image';
 import { connection } from 'next/server';
+
+import { formatMoney, getMenu } from '@/lib/catalog';
 import {
   getContact,
   getSiteContent,
   whatsappHref
 } from '@/lib/site';
+import {
+  getPublicMedia,
+  mediaSrc
+} from '@/lib/media';
+
 export default async function Home() {
   await connection();
 
-  const [menu, content, contact] = await Promise.all([
+  const [
+    menu,
+    content,
+    contact,
+    media
+  ] = await Promise.all([
     getMenu(),
     getSiteContent(),
-    getContact()
+    getContact(),
+    getPublicMedia()
   ]);
 
   const whatsAppUrl = whatsappHref(contact.whatsapp);
@@ -20,38 +33,94 @@ export default async function Home() {
     <main>
       {/* Hero */}
       <section className="hero">
+        {media.hero && (
+          <Image
+            className="heroMedia"
+            src={mediaSrc(media.hero)}
+            alt={media.hero.alt}
+            fill
+            priority
+            sizes="100vw"
+          />
+        )}
+
         <div className="shell heroContent">
-          <p className="kicker">{content.brand.heroNote}</p>
+          <p className="kicker">
+            {content.brand.heroNote}
+          </p>
+
           <h1>{content.brand.name}</h1>
-          <p className="tagline">{content.brand.tagline}</p>
+
+          <p className="tagline">
+            {content.brand.tagline}
+          </p>
 
           <div className="heroActions">
-            <a href="#menu">View Menu</a>
-            <a href="#visit">Find Us</a>
+            <a href="#menu">
+              View Menu
+            </a>
+
+            <a href="#visit">
+              Find Us
+            </a>
           </div>
         </div>
       </section>
 
       {/* About */}
-      <section id="about" className="section shell intro">
-        <div>
-          <p className="sectionKicker">Who we are</p>
+      <section
+        id="about"
+        className={
+          media.about
+            ? 'section shell aboutSection'
+            : 'section shell aboutSection aboutSectionWithoutMedia'
+        }
+      >
+        {media.about && (
+          <div className="aboutMedia">
+            <Image
+              src={mediaSrc(media.about)}
+              alt={media.about.alt}
+              fill
+              sizes="(max-width: 900px) 100vw, 45vw"
+            />
+          </div>
+        )}
+
+        <div className="aboutContent">
+          <p className="sectionKicker">
+            Who we are
+          </p>
+
           <h2>{content.about.title}</h2>
-        </div>
 
-        <div className="copy">
-          {content.about.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+          <div className="copy">
+            {content.about.paragraphs.map(
+              (paragraph) => (
+                <p key={paragraph}>
+                  {paragraph}
+                </p>
+              )
+            )}
 
-          <div className="featureGrid">
-            {content.about.features.map((feature) => (
-              <article className="featureCard" key={feature.title}>
-                <span className="featureIcon">{feature.icon}</span>
-                <h3>{feature.title}</h3>
-                <p>{feature.text}</p>
-              </article>
-            ))}
+            <div className="featureGrid">
+              {content.about.features.map(
+                (feature) => (
+                  <article
+                    className="featureCard"
+                    key={feature.title}
+                  >
+                    <span className="featureIcon">
+                      {feature.icon}
+                    </span>
+
+                    <h3>{feature.title}</h3>
+
+                    <p>{feature.text}</p>
+                  </article>
+                )
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -60,38 +129,94 @@ export default async function Home() {
       <section id="menu" className="section">
         <div className="shell">
           <div className="sectionHeading">
-            <p className="sectionKicker">Good things to order</p>
+            <p className="sectionKicker">
+              Good things to order
+            </p>
+
             <h2>The Menu</h2>
+
             <p>{content.menuNote}</p>
           </div>
 
           <div className="menuGrid">
-            {menu.categories.map((category) => (
-              <article key={category.id} className="menuCategory">
-                <h3>{category.name}</h3>
+            {menu.categories.map(
+              (category) => (
+                <article
+                  key={category.id}
+                  className="menuCategory"
+                >
+                  <h3>{category.name}</h3>
 
-                <div>
-                  {category.items.map((item) => (
-                    <div className="menuItem" key={item.id}>
-                      <div>
-                        <h4>{item.name}</h4>
-                        <p>{item.description}</p>
-                      </div>
+                  <div>
+                    {category.items.map(
+                      (item) => (
+                        <div
+                          className="menuItem"
+                          key={item.id}
+                        >
+                          <div>
+                            <h4>{item.name}</h4>
+                            <p>{item.description}</p>
+                          </div>
 
-                      <strong>{formatMoney(item.price)}</strong>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
+                          <strong>
+                            {formatMoney(item.price)}
+                          </strong>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </article>
+              )
+            )}
           </div>
         </div>
       </section>
 
+      {/* Gallery */}
+      {media.gallery.length > 0 && (
+        <section
+          id="gallery"
+          className="section gallerySection"
+        >
+          <div className="shell">
+            <div className="sectionHeading">
+              <p className="sectionKicker">
+                A peek inside
+              </p>
+
+              <h2>Gallery</h2>
+            </div>
+
+            <div className="galleryGrid">
+              {media.gallery.map((asset) => (
+                <article
+                  className="galleryItem"
+                  key={asset.id}
+                >
+                  <Image
+                    src={mediaSrc(asset)}
+                    alt={asset.alt}
+                    fill
+                    sizes="(max-width: 720px) 50vw, 33vw"
+                  />
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Visit */}
-      <section id="visit" className="section shell visit">
+      <section
+        id="visit"
+        className="section shell visit"
+      >
         <div>
-          <p className="sectionKicker">Come say hi</p>
+          <p className="sectionKicker">
+            Come say hi
+          </p>
+
           <h2>Visit Us</h2>
 
           {contact.mapEmbedUrl && (
@@ -99,7 +224,7 @@ export default async function Home() {
               className="mapFrame"
               src={contact.mapEmbedUrl}
               loading="lazy"
-              title="Cinnamon & Clay location"
+              title={`${content.brand.name} location`}
             />
           )}
         </div>
@@ -112,7 +237,10 @@ export default async function Home() {
 
           <div className="hoursList">
             {contact.hours.map((hour) => (
-              <div className="hoursRow" key={hour.day}>
+              <div
+                className="hoursRow"
+                key={hour.day}
+              >
                 <span>{hour.day}</span>
                 <span>{hour.time}</span>
               </div>
@@ -122,7 +250,12 @@ export default async function Home() {
           <h3>Contact</h3>
 
           <p>
-            <a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`}>
+            <a
+              href={`tel:${contact.phone.replace(
+                /[^\d+]/g,
+                ''
+              )}`}
+            >
               {contact.phone}
             </a>
 
@@ -134,16 +267,18 @@ export default async function Home() {
           </p>
 
           <div className="socialLinks">
-            {contact.socialLinks.map((link) => (
-              <a
-                key={link.platform}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {link.platform}
-              </a>
-            ))}
+            {contact.socialLinks.map(
+              (link) => (
+                <a
+                  key={link.platform}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {link.platform}
+                </a>
+              )
+            )}
           </div>
 
           {whatsAppUrl && (
@@ -162,7 +297,8 @@ export default async function Home() {
       {/* Footer */}
       <footer>
         <div className="shell">
-          © {new Date().getFullYear()} {content.brand.name}
+          © {new Date().getFullYear()}{' '}
+          {content.brand.name}
         </div>
       </footer>
     </main>
