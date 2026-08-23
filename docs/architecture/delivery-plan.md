@@ -31,7 +31,7 @@ Add review moderation/publish state and public read model.
 
 ## PR 06 - identity and authorization
 
-Add local Keycloak, Spring Security resource server, roles/scopes and authenticated Flutter login.
+Add local Keycloak, Spring Security resource server, roles/scopes, secure token handling and authenticated Flutter login.
 
 ## PR 07 - admin CRUD
 
