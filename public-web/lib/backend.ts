@@ -1,22 +1,35 @@
-export async function backendGet<T>(
-  path: string,
-  buildFallback: T
-): Promise<T> {
-  if (process.env.SKIP_BACKEND_FETCH_DURING_BUILD === 'true') {
-    return buildFallback;
+function getBackendBaseUrl(): string {
+  const configuredUrl = process.env.BACKEND_INTERNAL_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl.replace(/\/+$/, '');
   }
 
-  const baseUrl =
-    process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:8080';
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:8080';
+  }
 
-  const response = await fetch(`${baseUrl}${path}`, {
-    next: { revalidate: 300 },
-    signal: AbortSignal.timeout(5000)
-  });
+  throw new Error(
+    'BACKEND_INTERNAL_URL must be configured outside development'
+  );
+}
+
+export async function backendGet<T>(
+  path: `/${string}`
+): Promise<T> {
+  const response = await fetch(
+    `${getBackendBaseUrl()}${path}`,
+    {
+      next: {
+        revalidate: 300
+      },
+      signal: AbortSignal.timeout(5000)
+    }
+  );
 
   if (!response.ok) {
     throw new Error(
-      `Backend request ${path} returned ${response.status}`
+      `Backend request ${path} returned HTTP ${response.status}`
     );
   }
 

@@ -580,3 +580,51 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Application states */
+
+.pageState {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: 32px;
+  background: var(--background);
+}
+
+.pageStateCard {
+  width: min(100%, 560px);
+  padding: 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.pageStateCard h1 {
+  margin-bottom: 16px;
+  color: var(--primary);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+}
+
+.pageStateCard > p:not(.sectionKicker) {
+  color: var(--muted);
+}
+
+.pageStateCard button {
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pageStateCard button:hover {
+  background: #714829;
+}
