@@ -110,6 +110,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- W3C trace propagation + local trace/span correlation. OTLP export is opt-in. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+        </dependency>
+
         <!-- OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>

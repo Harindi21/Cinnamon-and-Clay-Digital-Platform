@@ -123,3 +123,22 @@ erDiagram
         timestamptz published_at
         bigint version
     }
+
+    ADMIN_AUDIT_EVENT {
+        uuid id PK
+        timestamptz occurred_at
+        varchar actor_subject
+        varchar actor_username
+        jsonb actor_roles
+        varchar action
+        varchar resource_type
+        varchar resource_id
+        varchar request_id
+        varchar trace_id
+        jsonb before_state
+        jsonb after_state
+        jsonb metadata
+    }
+```
+
+`ADMIN_AUDIT_EVENT` is intentionally append-only. A PostgreSQL trigger rejects update, delete and truncate operations; normal application access is read-only outside insertion through the audit service. It deliberately has no foreign keys to mutable business tables so historical events survive resource deactivation and future lifecycle changes.

@@ -2,24 +2,28 @@
 
 ## Assets
 
-- admin identity and authorization tokens
-- cafe content/catalog integrity
-- customer-visible availability
-- database and media backups
-- deployment credentials and repository secrets
+- administrator identity and authorization tokens;
+- cafe content/catalog integrity;
+- append-only administrator change history;
+- customer-visible availability and freshness;
+- database and media backups;
+- deployment credentials, cache-revalidation secret and repository secrets.
 
-## Important threats to address
+## Important threats
 
-- stolen admin token or overly broad role
-- mass assignment / missing server-side authorization
-- stored XSS through admin-managed text
-- malicious or oversized file upload
-- SQL injection or unsafe native queries
-- secret leakage through Git, CI logs or images
-- vulnerable dependencies/base images
-- destructive migration or accidental data loss
-- denial of service against public endpoints
-- supply-chain compromise in CI actions/images
+- stolen administrator token or overly broad role;
+- mass assignment / missing server-side authorization;
+- stored XSS through administrator-managed text;
+- malicious or oversized file upload;
+- SQL injection or unsafe native queries;
+- audit tampering or accidental audit deletion;
+- sensitive values leaking into audit/log payloads;
+- forged cache-invalidation requests;
+- secret leakage through Git, CI logs or images;
+- vulnerable dependencies/base images;
+- destructive migration or accidental data loss;
+- denial of service against public endpoints;
+- supply-chain compromise in CI actions/images.
 
 ## Implemented identity controls
 
@@ -29,25 +33,39 @@
 - privileged API routes enforce server-side RBAC;
 - CSRF checks remain enabled generally; the stateless bearer-token administrator API path is explicitly excluded because it does not use cookie authentication;
 - authorization uses roles belonging specifically to the Cinnamon & Clay API client;
-- the resource server is stateless and does not persist access tokens.
+- the resource server is stateless and does not persist access tokens;
+- only `admin` may browse the audit trail or perform media orphan cleanup.
 
-## Implemented write controls
+## Implemented write/integrity controls
 
 - administrator write endpoints use explicit request DTO allow-lists and bean validation;
-- catalog, review, content and contact writes use optimistic concurrency versions to prevent silent lost updates;
+- catalog, review, content, contact and media writes use optimistic concurrency versions to prevent silent lost updates;
 - public visibility is controlled server-side rather than trusted to Flutter UI state;
-- administrator-managed map and social URLs are restricted to HTTPS, and WhatsApp numbers use E.164 when enabled;
-- destructive catalog/review actions use reversible hide/deactivate state instead of physical deletion.
-- media uploads are capped at the multipart and application layers, binary-sniffed as JPEG/PNG, dimension/pixel bounded and stored under server-generated object keys;
-- media replacement uses new-object-then-metadata-switch semantics with compensating cleanup, and orphan reconciliation uses an age grace period;
-- Hero/About singleton visibility is enforced in service logic and by a partial database uniqueness constraint.
+- administrator-managed map/social URLs are HTTPS-restricted and WhatsApp numbers use E.164 when enabled;
+- destructive business actions use reversible lifecycle state rather than physical deletion;
+- media uploads are byte/dimension/pixel bounded, binary-sniffed as JPEG/PNG and stored under generated object keys;
+- media replacement uses new-object-then-metadata-switch semantics with compensating cleanup and aged orphan reconciliation;
+- Hero/About singleton visibility is enforced in service logic and by a partial database uniqueness constraint;
+- successful administrator mutations write a bounded, sanitized audit event in the same transaction where applicable;
+- PostgreSQL rejects update/delete/truncate against the audit table.
 
-## Controls backlog
+## Implemented operational controls
 
-- output escaping and content restrictions
-- parameterized persistence APIs
-- Gitleaks and secret rotation runbook
-- CodeQL, dependency review, Dependabot, Trivy
-- backup/restore tests and migration review
-- rate limiting at the edge/API gateway if needed
-- pin third-party CI actions/images by immutable digest after bootstrap
+- request IDs are bounded/validated and returned to callers; traces, logs, Problem Details and audit events share correlation identifiers when available;
+- audit payload sanitization redacts common credential/token field names and bounds depth/size;
+- public cache invalidation is server-to-server, allow-listed by tag and protected with a per-environment shared secret using constant-time comparison;
+- failed cache invalidation does not roll back a committed business write; the bounded Next.js TTL is the fallback;
+- Prometheus/Grafana and alert rules are available through an optional local profile;
+- backup, destructive restore and isolated restore-rehearsal scripts are checked into the repository; backup artifacts are Git-ignored.
+
+## Controls backlog / deployment work
+
+- confirm output-encoding/content restrictions with browser E2E/security tests;
+- production edge rate limiting/WAF policy if traffic requires it;
+- immutable image/action digest pinning after bootstrap;
+- production OIDC/key rotation and secret manager integration;
+- encrypted off-site database backup retention and PITR;
+- object-storage versioning/backup/replication aligned with database recovery;
+- centralized log/trace destination with access controls and retention;
+- audit retention/archive policy owned outside normal application credentials;
+- signed images, SBOM/provenance and controlled environment promotion.

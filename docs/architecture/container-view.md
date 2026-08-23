@@ -3,35 +3,31 @@
 ```mermaid
 flowchart LR
   subgraph Clients
-    WEB[public-web
-Next.js]
-    ADM[admin-flutter
-Flutter]
+    WEB[public-web\nNext.js]
+    ADM[admin-flutter\nFlutter]
   end
 
-  subgraph Backend
-    API[backend
-Spring Boot]
-    CATALOG[Catalog module]
-    CONTENT[Content module]
-    REVIEWS[Reviews module]
-    CONTACT[Contact module]
-    MEDIA[Media module]
-    AUDIT[Audit module
-planned]
+  subgraph Backend[backend · Spring Boot modular monolith]
+    CATALOG[Catalog]
+    CONTENT[Content]
+    REVIEWS[Reviews]
+    CONTACT[Contact]
+    MEDIA[Media]
+    AUDIT[Audit]
+    PUBLISHING[Publishing]
   end
 
   DB[(PostgreSQL)]
-  OBJ[(Object storage)]
+  OBJ[(S3-compatible\nobject storage)]
+  IDP[OIDC provider\nKeycloak locally]
+  PROM[Prometheus\noptional local profile]
+  GRAFANA[Grafana\noptional local profile]
 
-  WEB --> API
-  ADM --> API
-  API --> CATALOG
-  API --> CONTENT
-  API --> REVIEWS
-  API --> CONTACT
-  API --> MEDIA
-  API --> AUDIT
+  WEB -->|public REST reads| Backend
+  ADM -->|authenticated REST| Backend
+  ADM -->|Authorization Code + PKCE| IDP
+  Backend -->|JWT issuer/claims| IDP
+
   CATALOG --> DB
   CONTENT --> DB
   REVIEWS --> DB
@@ -39,4 +35,17 @@ planned]
   MEDIA --> DB
   MEDIA --> OBJ
   AUDIT --> DB
+
+  CATALOG --> AUDIT
+  CONTENT --> AUDIT
+  REVIEWS --> AUDIT
+  CONTACT --> AUDIT
+  MEDIA --> AUDIT
+  AUDIT -->|admin change event| PUBLISHING
+  PUBLISHING -->|authenticated tag revalidation| WEB
+
+  PROM -->|/actuator/prometheus| Backend
+  GRAFANA --> PROM
 ```
+
+The audit module is a durable application change log, not a replacement for centralized security/platform logs. Publishing is deliberately best-effort after commit so public cache freshness does not become part of the business transaction.

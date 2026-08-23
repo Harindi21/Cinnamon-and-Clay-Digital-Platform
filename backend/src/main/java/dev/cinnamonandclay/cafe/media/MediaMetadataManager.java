@@ -1,11 +1,14 @@
 package dev.cinnamonandclay.cafe.media;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
@@ -13,9 +16,14 @@ import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 class MediaMetadataManager {
 
     private final MediaAssetRepository repository;
+    private final AuditTrail auditTrail;
 
-    MediaMetadataManager(MediaAssetRepository repository) {
+    MediaMetadataManager(
+            MediaAssetRepository repository,
+            AuditTrail auditTrail
+    ) {
         this.repository = repository;
+        this.auditTrail = auditTrail;
     }
 
     @Transactional(readOnly = true)
@@ -69,7 +77,17 @@ class MediaMetadataManager {
                 sortOrder,
                 active
         );
-        return AdminMediaService.toAdminResponse(repository.saveAndFlush(asset));
+        AdminMediaService.AssetResponse created = AdminMediaService.toAdminResponse(
+                repository.saveAndFlush(asset)
+        );
+        auditTrail.record(
+                AuditAction.CREATE,
+                "media.asset",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -79,6 +97,7 @@ class MediaMetadataManager {
     ) {
         MediaAssetEntity asset = requireAsset(id);
         assertVersion(asset.version(), command.version());
+        AdminMediaService.AssetResponse before = AdminMediaService.toAdminResponse(asset);
 
         if (command.active()) {
             deactivateOtherSingletonAssets(command.purpose(), id);
@@ -90,7 +109,17 @@ class MediaMetadataManager {
                 command.sortOrder(),
                 command.active()
         );
-        return AdminMediaService.toAdminResponse(repository.saveAndFlush(asset));
+        AdminMediaService.AssetResponse after = AdminMediaService.toAdminResponse(
+                repository.saveAndFlush(asset)
+        );
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "media.asset",
+                id,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
@@ -101,21 +130,38 @@ class MediaMetadataManager {
     ) {
         MediaAssetEntity asset = requireAsset(id);
         assertVersion(asset.version(), version);
+        AdminMediaService.AssetResponse before = AdminMediaService.toAdminResponse(asset);
         String previousObjectKey = asset.objectKey();
         asset.replaceFile(file);
         MediaAssetEntity saved = repository.saveAndFlush(asset);
-        return new ReplacementResult(
-                AdminMediaService.toAdminResponse(saved),
-                previousObjectKey
+        AdminMediaService.AssetResponse after = AdminMediaService.toAdminResponse(saved);
+        auditTrail.record(
+                AuditAction.REPLACE,
+                "media.asset",
+                id,
+                before,
+                after,
+                Map.of("binaryChanged", true)
         );
+        return new ReplacementResult(after, previousObjectKey);
     }
 
     @Transactional
     void deactivate(UUID id, long version) {
         MediaAssetEntity asset = requireAsset(id);
         assertVersion(asset.version(), version);
+        AdminMediaService.AssetResponse before = AdminMediaService.toAdminResponse(asset);
         asset.deactivate();
-        repository.saveAndFlush(asset);
+        AdminMediaService.AssetResponse after = AdminMediaService.toAdminResponse(
+                repository.saveAndFlush(asset)
+        );
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "media.asset",
+                id,
+                before,
+                after
+        );
     }
 
     private void deactivateOtherSingletonAssets(
@@ -130,11 +176,22 @@ class MediaMetadataManager {
                 .findByPurposeAndActiveTrueOrderBySortOrderAscIdAsc(purpose);
         for (MediaAssetEntity activeAsset : activeAssets) {
             if (assetToKeep == null || !activeAsset.id().equals(assetToKeep)) {
+                AdminMediaService.AssetResponse before =
+                        AdminMediaService.toAdminResponse(activeAsset);
                 activeAsset.deactivate();
+                repository.flush();
+                auditTrail.record(
+                        AuditAction.DEACTIVATE,
+                        "media.asset",
+                        activeAsset.id(),
+                        before,
+                        AdminMediaService.toAdminResponse(activeAsset),
+                        Map.of(
+                                "reason", "singleton-purpose-invariant",
+                                "purpose", purpose.name()
+                        )
+                );
             }
-        }
-        if (!activeAssets.isEmpty()) {
-            repository.flush();
         }
     }
 
@@ -143,6 +200,16 @@ class MediaMetadataManager {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Media asset " + id + " was not found."
                 ));
+    }
+
+    private static AuditAction activeChangeAction(boolean before, boolean after) {
+        if (!before && after) {
+            return AuditAction.REACTIVATE;
+        }
+        if (before && !after) {
+            return AuditAction.DEACTIVATE;
+        }
+        return AuditAction.UPDATE;
     }
 
     private static void assertVersion(long current, long supplied) {

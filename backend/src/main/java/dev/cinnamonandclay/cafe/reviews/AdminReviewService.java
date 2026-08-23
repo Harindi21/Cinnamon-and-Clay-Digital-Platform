@@ -8,6 +8,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
@@ -15,9 +17,14 @@ import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 class AdminReviewService {
 
     private final ReviewRepository repository;
+    private final AuditTrail auditTrail;
 
-    AdminReviewService(ReviewRepository repository) {
+    AdminReviewService(
+            ReviewRepository repository,
+            AuditTrail auditTrail
+    ) {
         this.repository = repository;
+        this.auditTrail = auditTrail;
     }
 
     @Transactional(readOnly = true)
@@ -39,13 +46,24 @@ class AdminReviewService {
                 parseStatus(command.status()),
                 command.sortOrder()
         );
-        return toResponse(repository.saveAndFlush(review));
+        AdminReviewResponse created = toResponse(repository.saveAndFlush(review));
+        auditTrail.record(
+                created.status().equals(ReviewStatus.PUBLISHED.name())
+                        ? AuditAction.PUBLISH
+                        : AuditAction.CREATE,
+                "reviews.review",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
     AdminReviewResponse update(UUID id, UpdateReviewCommand command) {
         ReviewEntity review = requireReview(id);
         assertVersion(review.version(), command.version());
+        AdminReviewResponse before = toResponse(review);
         review.update(
                 command.authorName().trim(),
                 command.body().trim(),
@@ -53,15 +71,31 @@ class AdminReviewService {
                 parseStatus(command.status()),
                 command.sortOrder()
         );
-        return toResponse(repository.saveAndFlush(review));
+        AdminReviewResponse after = toResponse(repository.saveAndFlush(review));
+        auditTrail.record(
+                statusChangeAction(before.status(), after.status()),
+                "reviews.review",
+                id,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void hide(UUID id, long version) {
         ReviewEntity review = requireReview(id);
         assertVersion(review.version(), version);
+        AdminReviewResponse before = toResponse(review);
         review.changeStatus(ReviewStatus.HIDDEN);
-        repository.saveAndFlush(review);
+        AdminReviewResponse after = toResponse(repository.saveAndFlush(review));
+        auditTrail.record(
+                AuditAction.HIDE,
+                "reviews.review",
+                id,
+                before,
+                after
+        );
     }
 
     private ReviewEntity requireReview(UUID id) {
@@ -69,6 +103,22 @@ class AdminReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Review " + id + " was not found."
                 ));
+    }
+
+    private static AuditAction statusChangeAction(String before, String after) {
+        if (!ReviewStatus.PUBLISHED.name().equals(before)
+                && ReviewStatus.PUBLISHED.name().equals(after)) {
+            return AuditAction.PUBLISH;
+        }
+        if (!ReviewStatus.HIDDEN.name().equals(before)
+                && ReviewStatus.HIDDEN.name().equals(after)) {
+            return AuditAction.HIDE;
+        }
+        if (ReviewStatus.HIDDEN.name().equals(before)
+                && !ReviewStatus.HIDDEN.name().equals(after)) {
+            return AuditAction.REACTIVATE;
+        }
+        return AuditAction.UPDATE;
     }
 
     private static ReviewStatus parseStatus(String value) {

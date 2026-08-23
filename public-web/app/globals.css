@@ -729,6 +729,13 @@ footer {
   color: var(--muted);
 }
 
+.pageStateCard .errorReference {
+  margin-top: 10px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
 .pageStateCard button {
   min-height: 48px;
   margin-top: 14px;

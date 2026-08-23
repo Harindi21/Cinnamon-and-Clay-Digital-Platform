@@ -16,7 +16,7 @@ export type PublicMedia = {
 };
 
 export function getPublicMedia(): Promise<PublicMedia> {
-  return backendGet<PublicMedia>('/api/v1/media');
+  return backendGet<PublicMedia>('/api/v1/media', 'media');
 }
 
 export function mediaSrc(asset: MediaAsset): string {

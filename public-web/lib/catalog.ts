@@ -25,7 +25,7 @@ export type MenuResponse = {
 };
 
 export function getMenu(): Promise<MenuResponse> {
-  return backendGet<MenuResponse>('/api/v1/catalog/menu');
+  return backendGet<MenuResponse>('/api/v1/catalog/menu', 'catalog');
 }
 
 export function formatMoney(money: Money): string {

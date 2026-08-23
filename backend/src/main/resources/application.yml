@@ -50,10 +50,22 @@ management:
   observations:
     key-values:
       application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING_PROBABILITY:1.0}
+    export:
+      otlp:
+        enabled: ${OTLP_TRACING_ENABLED:false}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: ${spring.application.name}
 
 logging:
   pattern:
-    correlation: "[%X{traceId:-},%X{spanId:-}] "
+    correlation: "[%X{traceId:-},%X{spanId:-},%X{requestId:-}] "
 
 media:
   storage:
@@ -73,3 +85,8 @@ app:
   security:
     oidc:
       resource-client-id: ${OIDC_RESOURCE_CLIENT_ID:cinnamon-clay-api}
+  public-cache:
+    enabled: ${PUBLIC_REVALIDATION_ENABLED:false}
+    revalidation-url: ${PUBLIC_REVALIDATION_URL:http://localhost:3000/api/internal/revalidate}
+    secret: ${PUBLIC_REVALIDATION_SECRET:}
+    timeout: ${PUBLIC_REVALIDATION_TIMEOUT:PT1S}

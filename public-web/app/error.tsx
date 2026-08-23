@@ -28,6 +28,12 @@ export default function ErrorPage({
           Please try again in a moment.
         </p>
 
+        {error.digest && (
+          <p className="errorReference">
+            Support reference: {error.digest}
+          </p>
+        )}
+
         <button type="button" onClick={reset}>
           Try again
         </button>

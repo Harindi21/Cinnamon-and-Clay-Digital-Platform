@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
+
 @Service
 class AdminMediaService {
 
@@ -24,19 +27,22 @@ class AdminMediaService {
     private final MediaFileInspector inspector;
     private final MediaObjectKeyFactory objectKeyFactory;
     private final MediaUploadProperties uploadProperties;
+    private final AuditTrail auditTrail;
 
     AdminMediaService(
             MediaMetadataManager metadataManager,
             MediaStorage storage,
             MediaFileInspector inspector,
             MediaObjectKeyFactory objectKeyFactory,
-            MediaUploadProperties uploadProperties
+            MediaUploadProperties uploadProperties,
+            AuditTrail auditTrail
     ) {
         this.metadataManager = metadataManager;
         this.storage = storage;
         this.inspector = inspector;
         this.objectKeyFactory = objectKeyFactory;
         this.uploadProperties = uploadProperties;
+        this.auditTrail = auditTrail;
     }
 
     AdminMediaResponse listAssets() {
@@ -170,11 +176,19 @@ class AdminMediaService {
                 log.warn("Unable to delete orphan media object {}", key, exception);
             }
         }
-        return new OrphanCleanupResponse(
+        OrphanCleanupResponse response = new OrphanCleanupResponse(
                 report.count(),
                 deleted,
                 report.count() - deleted
         );
+        auditTrail.record(
+                AuditAction.CLEANUP,
+                "media.orphan-cleanup",
+                null,
+                null,
+                response
+        );
+        return response;
     }
 
     private void safeDelete(String objectKey, String reason) {

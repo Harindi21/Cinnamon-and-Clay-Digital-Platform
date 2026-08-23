@@ -58,3 +58,43 @@ jobs:
       - name: Test
         working-directory: admin-flutter
         run: flutter test
+
+
+  ops-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate Docker Compose configuration
+        run: docker compose --env-file .env.example -f infra/compose.yaml --profile observability config --quiet
+      - name: Validate Prometheus configuration and rules
+        run: |
+          docker run --rm \
+            -v "$PWD/infra/observability:/etc/prometheus:ro" \
+            --entrypoint /bin/promtool \
+            prom/prometheus:v3.14.0 \
+            check config /etc/prometheus/prometheus.yml
+          docker run --rm \
+            -v "$PWD/infra/observability:/etc/prometheus:ro" \
+            --entrypoint /bin/promtool \
+            prom/prometheus:v3.14.0 \
+            check rules /etc/prometheus/alerts.yml
+      - name: Validate Grafana dashboard JSON
+        run: python -m json.tool infra/observability/grafana/dashboards/cinnamon-clay-overview.json > /dev/null
+      - name: Parse PowerShell runbooks
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem tools -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              Write-Error "PowerShell parse errors in $($_.Name): $($errors -join '; ')"
+              $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }

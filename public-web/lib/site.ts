@@ -39,11 +39,11 @@ export type Contact = {
 };
 
 export function getSiteContent(): Promise<SiteContent> {
-  return backendGet<SiteContent>('/api/v1/content/site');
+  return backendGet<SiteContent>('/api/v1/content/site', 'content');
 }
 
 export function getContact(): Promise<Contact> {
-  return backendGet<Contact>('/api/v1/contact');
+  return backendGet<Contact>('/api/v1/contact', 'contact');
 }
 
 export function whatsappHref(

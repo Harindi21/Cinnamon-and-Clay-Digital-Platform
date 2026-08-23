@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
@@ -19,15 +21,18 @@ class AdminContactService {
     private final ContactProfileRepository profileRepository;
     private final OpeningHourRepository hourRepository;
     private final SocialLinkRepository socialRepository;
+    private final AuditTrail auditTrail;
 
     AdminContactService(
             ContactProfileRepository profileRepository,
             OpeningHourRepository hourRepository,
-            SocialLinkRepository socialRepository
+            SocialLinkRepository socialRepository,
+            AuditTrail auditTrail
     ) {
         this.profileRepository = profileRepository;
         this.hourRepository = hourRepository;
         this.socialRepository = socialRepository;
+        this.auditTrail = auditTrail;
     }
 
     @Transactional(readOnly = true)
@@ -54,6 +59,7 @@ class AdminContactService {
     ProfileResponse updateProfile(UpdateProfileCommand command) {
         ContactProfileEntity profile = requireProfile();
         assertVersion(profile.version(), command.version(), "contact profile");
+        ProfileResponse before = toProfile(profile);
         profile.update(
                 normalize(command.address()),
                 normalize(command.phone()),
@@ -63,7 +69,15 @@ class AdminContactService {
                 nullableTrim(command.whatsappNumber()),
                 command.whatsappPrefill().trim()
         );
-        return toProfile(profileRepository.saveAndFlush(profile));
+        ProfileResponse after = toProfile(profileRepository.saveAndFlush(profile));
+        auditTrail.record(
+                AuditAction.UPDATE,
+                "contact.profile",
+                CONTACT_ID,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
@@ -76,7 +90,15 @@ class AdminContactService {
                 command.sortOrder(),
                 command.active()
         );
-        return toHour(hourRepository.saveAndFlush(hour));
+        OpeningHourResponse created = toHour(hourRepository.saveAndFlush(hour));
+        auditTrail.record(
+                AuditAction.CREATE,
+                "contact.opening-hour",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -86,21 +108,38 @@ class AdminContactService {
     ) {
         OpeningHourEntity hour = requireHour(hourId);
         assertVersion(hour.version(), command.version(), "opening hour");
+        OpeningHourResponse before = toHour(hour);
         hour.update(
                 normalize(command.dayLabel()),
                 normalize(command.timeLabel()),
                 command.sortOrder(),
                 command.active()
         );
-        return toHour(hourRepository.saveAndFlush(hour));
+        OpeningHourResponse after = toHour(hourRepository.saveAndFlush(hour));
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "contact.opening-hour",
+                hourId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateOpeningHour(UUID hourId, long version) {
         OpeningHourEntity hour = requireHour(hourId);
         assertVersion(hour.version(), version, "opening hour");
+        OpeningHourResponse before = toHour(hour);
         hour.deactivate();
-        hourRepository.saveAndFlush(hour);
+        OpeningHourResponse after = toHour(hourRepository.saveAndFlush(hour));
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "contact.opening-hour",
+                hourId,
+                before,
+                after
+        );
     }
 
     @Transactional
@@ -122,7 +161,15 @@ class AdminContactService {
                 command.sortOrder(),
                 command.active()
         );
-        return toSocial(socialRepository.saveAndFlush(link));
+        SocialLinkResponse created = toSocial(socialRepository.saveAndFlush(link));
+        auditTrail.record(
+                AuditAction.CREATE,
+                "contact.social-link",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -132,6 +179,7 @@ class AdminContactService {
     ) {
         SocialLinkEntity link = requireSocialLink(linkId);
         assertVersion(link.version(), command.version(), "social link");
+        SocialLinkResponse before = toSocial(link);
         String platform = normalizePlatform(command.platform());
         if (socialRepository.existsByContactProfileIdAndPlatformIgnoreCaseAndIdNot(
                 CONTACT_ID,
@@ -148,15 +196,31 @@ class AdminContactService {
                 command.sortOrder(),
                 command.active()
         );
-        return toSocial(socialRepository.saveAndFlush(link));
+        SocialLinkResponse after = toSocial(socialRepository.saveAndFlush(link));
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "contact.social-link",
+                linkId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateSocialLink(UUID linkId, long version) {
         SocialLinkEntity link = requireSocialLink(linkId);
         assertVersion(link.version(), version, "social link");
+        SocialLinkResponse before = toSocial(link);
         link.deactivate();
-        socialRepository.saveAndFlush(link);
+        SocialLinkResponse after = toSocial(socialRepository.saveAndFlush(link));
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "contact.social-link",
+                linkId,
+                before,
+                after
+        );
     }
 
     private ContactProfileEntity requireProfile() {
@@ -193,6 +257,16 @@ class AdminContactService {
                             + " changed after it was loaded. Refresh and try again."
             );
         }
+    }
+
+    private static AuditAction activeChangeAction(boolean before, boolean after) {
+        if (!before && after) {
+            return AuditAction.REACTIVATE;
+        }
+        if (before && !after) {
+            return AuditAction.DEACTIVATE;
+        }
+        return AuditAction.UPDATE;
     }
 
     private static String normalize(String value) {

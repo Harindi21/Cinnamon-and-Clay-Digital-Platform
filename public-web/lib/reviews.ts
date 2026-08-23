@@ -11,9 +11,6 @@ export type PublicReviewsResponse = {
   reviews: PublicReview[];
 };
 
-export function getPublicReviews():
-Promise<PublicReviewsResponse> {
-  return backendGet<PublicReviewsResponse>(
-    '/api/v1/reviews'
-  );
+export function getPublicReviews(): Promise<PublicReviewsResponse> {
+  return backendGet<PublicReviewsResponse>('/api/v1/reviews', 'reviews');
 }

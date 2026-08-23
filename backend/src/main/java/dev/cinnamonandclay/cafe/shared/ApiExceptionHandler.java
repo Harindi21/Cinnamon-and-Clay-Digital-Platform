@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -48,7 +49,7 @@ class ApiExceptionHandler {
         detail.setTitle("Invalid request");
         detail.setType(URI.create("urn:cinnamon-clay:problem:invalid-request"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -63,7 +64,7 @@ class ApiExceptionHandler {
         detail.setTitle("Upload too large");
         detail.setType(URI.create("urn:cinnamon-clay:problem:payload-too-large"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler({
@@ -83,7 +84,7 @@ class ApiExceptionHandler {
         detail.setTitle("Malformed request");
         detail.setType(URI.create("urn:cinnamon-clay:problem:malformed-request"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -107,7 +108,7 @@ class ApiExceptionHandler {
         detail.setType(URI.create("urn:cinnamon-clay:problem:validation"));
         detail.setProperty("path", request.getRequestURI());
         detail.setProperty("errors", errors);
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -122,7 +123,7 @@ class ApiExceptionHandler {
         detail.setTitle("Resource not found");
         detail.setType(URI.create("urn:cinnamon-clay:problem:not-found"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler({
@@ -144,7 +145,7 @@ class ApiExceptionHandler {
         detail.setTitle("Resource conflict");
         detail.setType(URI.create("urn:cinnamon-clay:problem:conflict"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -167,7 +168,7 @@ class ApiExceptionHandler {
         detail.setTitle("Data conflict");
         detail.setType(URI.create("urn:cinnamon-clay:problem:data-conflict"));
         detail.setProperty("path", request.getRequestURI());
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -195,7 +196,7 @@ class ApiExceptionHandler {
         detail.setType(URI.create("urn:cinnamon-clay:problem:validation"));
         detail.setProperty("path", request.getRequestURI());
         detail.setProperty("errors", errors);
-        return detail;
+        return withRequestContext(detail, request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -219,6 +220,23 @@ class ApiExceptionHandler {
         detail.setTitle("Internal server error");
         detail.setType(URI.create("urn:cinnamon-clay:problem:internal-error"));
         detail.setProperty("path", request.getRequestURI());
+        return withRequestContext(detail, request);
+    }
+
+    private static ProblemDetail withRequestContext(
+            ProblemDetail detail,
+            HttpServletRequest request
+    ) {
+        detail.setProperty("path", request.getRequestURI());
+        String requestId = MDC.get("requestId");
+        if (requestId != null && !requestId.isBlank()) {
+            detail.setProperty("requestId", requestId);
+        }
+        String traceId = MDC.get("traceId");
+        if (traceId != null && !traceId.isBlank()) {
+            detail.setProperty("traceId", traceId);
+        }
         return detail;
     }
+
 }

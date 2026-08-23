@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Cinnamon & Clay
+    orgId: 1
+    folder: Cinnamon & Clay
+    type: file
+    disableDeletion: true
+    editable: false
+    options:
+      path: /var/lib/grafana/dashboards

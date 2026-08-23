@@ -37,9 +37,9 @@ Add local Keycloak, Spring Security resource server, roles/scopes, secure token 
 
 Create/edit/reorder/activate flows use validation and optimistic locking across catalog, reviews, content, contact and media.
 
-## PR 08 - audit and operational readiness
+## PR 08 - audit and operational readiness - complete for portfolio scope
 
-Add append-only admin audit records, structured logs, metrics, dashboards, runbooks, backups and restore rehearsal.
+Implemented append-only administrator audit events, request/trace correlation, production structured logging, Prometheus metrics, optional OpenTelemetry export, local Prometheus/Grafana dashboards and alerts, publish-driven Next.js cache invalidation, executable backup/restore/rehearsal tooling and operational runbooks. Provider-managed retention and production telemetry destinations remain deployment concerns.
 
 ## PR 09 - delivery
 

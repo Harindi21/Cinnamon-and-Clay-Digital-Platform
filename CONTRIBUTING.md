@@ -21,4 +21,5 @@ A change is done when:
 - migrations are forward-only and reviewed;
 - security impact has been considered;
 - operational impact and rollback are documented when relevant;
+- administrator mutations preserve audit coverage and public mutations preserve cache-freshness behavior;
 - ADRs are added or updated for material architectural decisions.
