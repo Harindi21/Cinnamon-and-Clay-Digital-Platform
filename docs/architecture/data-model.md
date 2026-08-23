@@ -20,6 +20,7 @@ erDiagram
         varchar name
         int sort_order
         boolean active
+        bigint version
     }
 
     MENU_ITEM {

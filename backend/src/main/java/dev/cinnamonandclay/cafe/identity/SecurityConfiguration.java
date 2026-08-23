@@ -26,6 +26,11 @@ class SecurityConfiguration {
     ) throws Exception {
 
         http
+                .csrf(
+                        csrf -> csrf.ignoringRequestMatchers(
+                                "/api/v1/admin/**"
+                        )
+                )
                 .sessionManagement(
                         session -> session
                                 .sessionCreationPolicy(
