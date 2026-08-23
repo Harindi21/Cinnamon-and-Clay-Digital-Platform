@@ -4,6 +4,9 @@ export type MediaAsset = {
   id: string;
   url: string;
   alt: string;
+  width: number | null;
+  height: number | null;
+  version: number;
 };
 
 export type PublicMedia = {
@@ -17,5 +20,5 @@ export function getPublicMedia(): Promise<PublicMedia> {
 }
 
 export function mediaSrc(asset: MediaAsset): string {
-  return `/media/${encodeURIComponent(asset.id)}`;
+  return `/media/${encodeURIComponent(asset.id)}?v=${asset.version}`;
 }

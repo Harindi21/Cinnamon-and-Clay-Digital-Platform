@@ -31,19 +31,31 @@ Commit the generated `package-lock.json`.
 
 ## Flutter admin
 
-Generate platform folders once:
+Generate and configure the Android runner once from a clean working tree:
 
 ```powershell
 Set-Location admin-flutter
-flutter create --platforms=windows,android,web --project-name cinnamon_clay_admin .
+powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
 ```
 
-Restore repository-owned source files if `flutter create` replaced them, then:
+Start an Android emulator/device, then map its loopback ports to the host services:
 
 ```powershell
-flutter pub get
-flutter run -d windows --dart-define=API_BASE_URL=http://localhost:8080
+adb reverse tcp:8080 tcp:8080
+adb reverse tcp:8081 tcp:8081
 ```
+
+Run the application:
+
+```powershell
+flutter run `
+  --dart-define=API_BASE_URL=http://localhost:8080 `
+  --dart-define=OIDC_ISSUER_URL=http://localhost:8081/realms/cinnamon-clay `
+  --dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile `
+  --dart-define=OIDC_ALLOW_INSECURE=true
+```
+
+Review and commit the generated `android/` runner instead of regenerating it for every session. See `docs/runbooks/admin-oidc-local.md`.
 
 ## Stop
 

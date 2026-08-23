@@ -21,9 +21,9 @@
 
 Migrate brand, about text/features, location, opening hours, social links and WhatsApp configuration out of the static demo. Presentation theme remains in Next.js under ADR 0007.
 
-## PR 04 - gallery/media
+## PR 04 - gallery/media - complete
 
-Add media metadata, object storage, upload validation, image processing policy and orphan cleanup.
+Media metadata and S3-compatible storage are implemented together with authenticated Flutter upload/edit/replace/hide flows, binary JPEG/PNG sniffing, byte/dimension/pixel limits, singleton Hero/About placement rules, versioned cache busting and administrator orphan reconciliation. ADR 0011 records the cross-store consistency and image-processing policy.
 
 ## PR 05 - reviews
 
@@ -33,9 +33,9 @@ Add review moderation/publish state and public read model.
 
 Add local Keycloak, Spring Security resource server, roles/scopes, secure token handling and authenticated Flutter login.
 
-## PR 07 - admin CRUD
+## PR 07 - admin CRUD - complete
 
-Add create/edit/reorder/activate flows with optimistic locking and validation across catalog, reviews, content and contact. Media administration remains part of PR 04 completion.
+Create/edit/reorder/activate flows use validation and optimistic locking across catalog, reviews, content, contact and media.
 
 ## PR 08 - audit and operational readiness
 

@@ -14,11 +14,9 @@ Store image metadata in PostgreSQL and bytes in S3-compatible object storage. Us
 Public media is initially read through the application API while the
 storage abstraction remains independent of that delivery mechanism.
 
-Privileged upload, replacement and deletion endpoints are intentionally
-deferred until admin OIDC authentication and authorization are in place.
-The project will not expose temporary unauthenticated media write endpoints.
+Privileged upload, replacement and lifecycle endpoints are exposed only after admin OIDC authentication and authorization. ADR 0011 defines the accepted image formats, validation limits, object-key policy, cross-store compensation and orphan reconciliation behavior.
 
 ## Consequences
 
 - Backend instances remain stateless with respect to files.
-- Media lifecycle, orphan cleanup, quotas and CDN/cache behavior need explicit ownership.
+- Media lifecycle and orphan cleanup are owned by ADR 0011; future quotas/CDN behavior still require explicit decisions if scale justifies them.

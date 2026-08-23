@@ -9,12 +9,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 class ApiExceptionHandler {
@@ -28,6 +34,80 @@ class ApiExceptionHandler {
         return value
                 .replace('\r', ' ')
                 .replace('\n', ' ');
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    ProblemDetail handleInvalidRequest(
+            InvalidRequestException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
+        detail.setTitle("Invalid request");
+        detail.setType(URI.create("urn:cinnamon-clay:problem:invalid-request"));
+        detail.setProperty("path", request.getRequestURI());
+        return detail;
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ProblemDetail handleUploadTooLarge(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "The uploaded file exceeds the configured request-size limit."
+        );
+        detail.setTitle("Upload too large");
+        detail.setType(URI.create("urn:cinnamon-clay:problem:payload-too-large"));
+        detail.setProperty("path", request.getRequestURI());
+        return detail;
+    }
+
+    @ExceptionHandler({
+            ServletRequestBindingException.class,
+            MissingServletRequestPartException.class,
+            MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class
+    })
+    ProblemDetail handleMalformedRequest(
+            Exception exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "The request is missing a required value or contains an invalid value."
+        );
+        detail.setTitle("Malformed request");
+        detail.setType(URI.create("urn:cinnamon-clay:problem:malformed-request"));
+        detail.setProperty("path", request.getRequestURI());
+        return detail;
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ProblemDetail handleConstraintViolation(
+            ConstraintViolationException exception,
+            HttpServletRequest request
+    ) {
+        List<Map<String, String>> errors = exception.getConstraintViolations()
+                .stream()
+                .map(violation -> Map.of(
+                        "field", violation.getPropertyPath().toString(),
+                        "message", violation.getMessage()
+                ))
+                .toList();
+
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "One or more request fields are invalid."
+        );
+        detail.setTitle("Validation failed");
+        detail.setType(URI.create("urn:cinnamon-clay:problem:validation"));
+        detail.setProperty("path", request.getRequestURI());
+        detail.setProperty("errors", errors);
+        return detail;
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

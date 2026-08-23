@@ -1,6 +1,8 @@
 package dev.cinnamonandclay.cafe.media;
 
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.List;
 
 interface MediaStorage {
 
@@ -14,4 +16,13 @@ interface MediaStorage {
     InputStream open(String objectKey);
 
     void delete(String objectKey);
+
+    List<StoredObject> list(String prefix);
+
+    record StoredObject(
+            String key,
+            Instant lastModified,
+            long sizeBytes
+    ) {
+    }
 }

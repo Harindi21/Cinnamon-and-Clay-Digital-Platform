@@ -80,6 +80,9 @@ class MediaApiIntegrationTest {
                         jsonPath("$.hero.alt")
                                 .value("Cinnamon & Clay cafe interior")
                 )
+                .andExpect(jsonPath("$.hero.width").value(1600))
+                .andExpect(jsonPath("$.hero.height").value(900))
+                .andExpect(jsonPath("$.hero.version").isNumber())
                 .andExpect(
                         jsonPath("$.gallery[0].id")
                                 .value(GALLERY_ID.toString())
@@ -131,9 +134,12 @@ class MediaApiIntegrationTest {
                     purpose,
                     alt_text,
                     sort_order,
-                    active
+                    active,
+                    width_pixels,
+                    height_pixels,
+                    checksum_sha256
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 id,
                 objectKey,
@@ -143,7 +149,10 @@ class MediaApiIntegrationTest {
                 purpose,
                 altText,
                 sortOrder,
-                active
+                active,
+                1600,
+                900,
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         );
     }
 }

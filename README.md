@@ -105,7 +105,7 @@ Media metadata is stored in PostgreSQL while image binaries are stored in S3-com
 
 Local development uses MinIO.
 
-The implemented media read path supports hero, about-section and gallery metadata plus S3-compatible binary streaming. Administrator upload/update/delete flows, upload hardening, image processing and orphan cleanup remain planned; see `docs/architecture/implementation-status.md`.
+The media lifecycle now includes authenticated Flutter upload, metadata editing, binary replacement, reversible hide/reactivate behavior and administrator-only orphan reconciliation. The backend sniffs JPEG/PNG content, enforces byte/dimension/pixel limits, generates safe object keys, records SHA-256 metadata and uses optimistic concurrency for media mutations. Next.js `Image` remains responsible for responsive delivery optimization rather than duplicating a pre-generated object-storage variant matrix. See `docs/adrs/0011-harden-admin-media-lifecycle.md`.
 
 ---
 
@@ -252,7 +252,7 @@ Invoke-RestMethod http://localhost:8080/api/v1/catalog/menu
 
 ### Media during local development
 
-The current repository does not yet include an administrator media-upload flow or a local media seeding script. The public website works without media records and renders the text/content sections normally. Media administration is tracked as remaining work in `docs/architecture/implementation-status.md`.
+Media is administered through the authenticated Flutter **Media** area. Uploads are stored in the local MinIO bucket while metadata remains in PostgreSQL; the public website reads only active media through the Spring API. Hero and About are singleton placements, while Gallery is ordered by `sort_order`. See `docs/runbooks/admin-media-management.md` for upload, replacement, hide/reactivate and orphan-reconciliation procedures.
 
 ### Run the public website
 
