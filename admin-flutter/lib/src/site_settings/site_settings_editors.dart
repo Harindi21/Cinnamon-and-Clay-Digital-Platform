@@ -2,7 +2,7 @@ import 'package:cinnamon_clay_admin/src/site_settings/site_settings_models.dart'
 import 'package:flutter/material.dart';
 
 class SiteEditorDialog extends StatefulWidget {
-  const SiteEditorDialog({required this.site});
+  const SiteEditorDialog({required this.site, super.key});
 
   final AdminSiteProfile site;
 
@@ -90,7 +90,7 @@ class _SiteEditorDialogState extends State<SiteEditorDialog> {
 }
 
 class ParagraphEditorDialog extends StatefulWidget {
-  const ParagraphEditorDialog({this.paragraph});
+  const ParagraphEditorDialog({this.paragraph, super.key});
 
   final AdminAboutParagraph? paragraph;
 
@@ -168,7 +168,7 @@ class _ParagraphEditorDialogState extends State<ParagraphEditorDialog> {
 }
 
 class FeatureEditorDialog extends StatefulWidget {
-  const FeatureEditorDialog({this.feature});
+  const FeatureEditorDialog({this.feature, super.key});
 
   final AdminSiteFeature? feature;
 
@@ -262,7 +262,7 @@ class _FeatureEditorDialogState extends State<FeatureEditorDialog> {
 }
 
 class ContactEditorDialog extends StatefulWidget {
-  const ContactEditorDialog({required this.contact});
+  const ContactEditorDialog({required this.contact, super.key});
 
   final AdminContactProfile contact;
 
@@ -403,7 +403,7 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
 }
 
 class OpeningHourEditorDialog extends StatefulWidget {
-  const OpeningHourEditorDialog({this.hour});
+  const OpeningHourEditorDialog({this.hour, super.key});
 
   final AdminOpeningHour? hour;
 
@@ -481,7 +481,7 @@ class _OpeningHourEditorDialogState extends State<OpeningHourEditorDialog> {
 }
 
 class SocialLinkEditorDialog extends StatefulWidget {
-  const SocialLinkEditorDialog({this.link});
+  const SocialLinkEditorDialog({this.link, super.key});
 
   final AdminSocialLink? link;
 

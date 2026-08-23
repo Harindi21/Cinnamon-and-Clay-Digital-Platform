@@ -8,6 +8,7 @@ class SiteSettingsSectionHeader extends StatelessWidget {
     required this.actionLabel,
     required this.actionIcon,
     required this.onAction,
+    super.key,
   });
 
   final String title;
@@ -46,7 +47,7 @@ class SiteSettingsSectionHeader extends StatelessWidget {
 }
 
 class SiteProfileCard extends StatelessWidget {
-  const SiteProfileCard({required this.site});
+  const SiteProfileCard({required this.site, super.key});
 
   final AdminSiteProfile site;
 
@@ -77,7 +78,7 @@ class SiteProfileCard extends StatelessWidget {
 }
 
 class ContactProfileCard extends StatelessWidget {
-  const ContactProfileCard({required this.contact});
+  const ContactProfileCard({required this.contact, super.key});
 
   final AdminContactProfile contact;
 
@@ -124,6 +125,7 @@ class ManagedSettingsCard extends StatelessWidget {
     required this.version,
     required this.onEdit,
     required this.onDeactivate,
+    super.key,
   });
 
   final String title;
@@ -178,7 +180,7 @@ class ManagedSettingsCard extends StatelessWidget {
 }
 
 class SettingsStatusChip extends StatelessWidget {
-  const SettingsStatusChip({required this.active});
+  const SettingsStatusChip({required this.active, super.key});
 
   final bool active;
 
@@ -189,7 +191,7 @@ class SettingsStatusChip extends StatelessWidget {
 }
 
 class SiteSettingsError extends StatelessWidget {
-  const SiteSettingsError({required this.error, required this.onRetry});
+  const SiteSettingsError({required this.error, required this.onRetry, super.key});
 
   final Object error;
   final VoidCallback onRetry;
