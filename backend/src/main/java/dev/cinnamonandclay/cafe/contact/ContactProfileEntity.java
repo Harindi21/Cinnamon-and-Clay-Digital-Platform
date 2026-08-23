@@ -1,12 +1,15 @@
 package dev.cinnamonandclay.cafe.contact;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "contact_profile")
@@ -40,7 +43,47 @@ class ContactProfileEntity {
     @Column(nullable = false)
     private long version;
 
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
     protected ContactProfileEntity() {
+    }
+
+    void update(
+            String address,
+            String phone,
+            String email,
+            String mapEmbedUrl,
+            boolean whatsappEnabled,
+            String whatsappNumberE164,
+            String whatsappPrefill
+    ) {
+        this.address = address;
+        this.phone = phone;
+        this.email = email;
+        this.mapEmbedUrl = mapEmbedUrl;
+        this.whatsappEnabled = whatsappEnabled;
+        this.whatsappNumberE164 = whatsappNumberE164;
+        this.whatsappPrefill = whatsappPrefill;
+    }
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+    UUID id() {
+        return id;
     }
 
     String address() {
@@ -69,5 +112,9 @@ class ContactProfileEntity {
 
     String whatsappPrefill() {
         return whatsappPrefill;
+    }
+
+    long version() {
+        return version;
     }
 }

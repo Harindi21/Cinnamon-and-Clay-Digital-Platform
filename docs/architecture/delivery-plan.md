@@ -19,7 +19,7 @@
 
 ## PR 03 - content and contact
 
-Migrate brand, theme, about text/features, location, opening hours, social links and WhatsApp configuration out of the static demo.
+Migrate brand, about text/features, location, opening hours, social links and WhatsApp configuration out of the static demo. Presentation theme remains in Next.js under ADR 0007.
 
 ## PR 04 - gallery/media
 
@@ -35,7 +35,7 @@ Add local Keycloak, Spring Security resource server, roles/scopes, secure token 
 
 ## PR 07 - admin CRUD
 
-Add create/edit/reorder/activate flows with optimistic locking and validation.
+Add create/edit/reorder/activate flows with optimistic locking and validation across catalog, reviews, content and contact. Media administration remains part of PR 04 completion.
 
 ## PR 08 - audit and operational readiness
 

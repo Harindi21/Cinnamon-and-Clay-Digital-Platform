@@ -5,6 +5,8 @@ import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
 import 'package:cinnamon_clay_admin/src/reviews/review_models.dart';
 import 'package:cinnamon_clay_admin/src/reviews/review_repository.dart';
+import 'package:cinnamon_clay_admin/src/site_settings/site_settings_models.dart';
+import 'package:cinnamon_clay_admin/src/site_settings/site_settings_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,6 +45,9 @@ void main() {
           ),
           catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
           reviewsProvider.overrideWith((ref) async => const <AdminReview>[]),
+          siteSettingsProvider.overrideWith(
+            (ref) async => _siteSettingsFixture,
+          ),
         ],
         child: const CinnamonClayAdminApp(),
       ),
@@ -51,7 +56,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Catalog'), findsWidgets);
+    expect(find.text('Site'), findsOneWidget);
     expect(find.text('Reviews'), findsOneWidget);
+
+    await tester.tap(find.text('Site'));
+    await tester.pumpAndSettle();
+    expect(find.text('Site settings'), findsOneWidget);
+    expect(find.text('Brand & public copy'), findsOneWidget);
 
     await tester.tap(find.text('Reviews'));
     await tester.pumpAndSettle();
@@ -80,3 +91,29 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {}
 }
+
+const _siteSettingsFixture = SiteSettingsSnapshot(
+  site: AdminSiteProfile(
+    id: 'site-1',
+    brandName: 'Cinnamon & Clay',
+    tagline: 'Slow coffee.',
+    heroNote: 'Colombo',
+    menuNote: 'Prices in LKR',
+    aboutTitle: 'Our story',
+    version: 0,
+  ),
+  paragraphs: <AdminAboutParagraph>[],
+  features: <AdminSiteFeature>[],
+  contact: AdminContactProfile(
+    id: 'contact-1',
+    address: 'Colombo',
+    phone: '+94 77 123 4567',
+    email: 'hello@example.com',
+    mapEmbedUrl: 'https://example.com/map',
+    whatsappEnabled: false,
+    whatsappPrefill: '',
+    version: 0,
+  ),
+  hours: <AdminOpeningHour>[],
+  socialLinks: <AdminSocialLink>[],
+);

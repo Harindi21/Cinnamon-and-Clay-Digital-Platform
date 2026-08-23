@@ -34,8 +34,9 @@
 ## Implemented write controls
 
 - administrator write endpoints use explicit request DTO allow-lists and bean validation;
-- catalog and review writes use optimistic concurrency versions to prevent silent lost updates;
+- catalog, review, content and contact writes use optimistic concurrency versions to prevent silent lost updates;
 - public visibility is controlled server-side rather than trusted to Flutter UI state;
+- administrator-managed map and social URLs are restricted to HTTPS, and WhatsApp numbers use E.164 when enabled;
 - destructive catalog/review actions use reversible hide/deactivate state instead of physical deletion.
 
 ## Controls backlog

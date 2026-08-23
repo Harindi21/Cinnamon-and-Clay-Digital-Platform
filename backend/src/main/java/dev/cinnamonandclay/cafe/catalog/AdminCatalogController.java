@@ -156,7 +156,7 @@ class AdminCatalogController {
             @NotBlank @Size(max = 120) String name,
             @Min(0) int sortOrder,
             boolean active,
-            @Min(0) long version
+            @NotNull @Min(0) Long version
     ) {
     }
 
@@ -182,7 +182,7 @@ class AdminCatalogController {
             String currency,
             @Min(0) int sortOrder,
             boolean active,
-            @Min(0) long version
+            @NotNull @Min(0) Long version
     ) {
     }
 }
