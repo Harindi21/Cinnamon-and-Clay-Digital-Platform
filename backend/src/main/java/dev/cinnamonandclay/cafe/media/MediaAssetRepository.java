@@ -1,15 +1,15 @@
 package dev.cinnamonandclay.cafe.media;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.UUID;
 
-interface MediaAssetRepository
-        extends JpaRepository<MediaAssetEntity, UUID> {
+import org.springframework.data.jpa.repository.JpaRepository;
 
-    List<MediaAssetEntity>
-    findByPurposeAndActiveTrueOrderBySortOrderAsc(
+interface MediaAssetRepository extends JpaRepository<MediaAssetEntity, UUID> {
+
+    List<MediaAssetEntity> findByPurposeAndActiveTrueOrderBySortOrderAscIdAsc(
             MediaPurpose purpose
     );
+
+    List<MediaAssetEntity> findAllByOrderByPurposeAscSortOrderAscIdAsc();
 }

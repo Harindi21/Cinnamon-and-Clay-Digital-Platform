@@ -107,6 +107,9 @@ erDiagram
         varchar alt_text
         int sort_order
         boolean active
+        int width_pixels
+        int height_pixels
+        varchar checksum_sha256
         bigint version
     }
 

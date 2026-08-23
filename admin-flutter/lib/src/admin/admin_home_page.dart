@@ -1,5 +1,6 @@
 import 'package:cinnamon_clay_admin/src/auth/auth_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_page.dart';
+import 'package:cinnamon_clay_admin/src/media/media_page.dart';
 import 'package:cinnamon_clay_admin/src/reviews/reviews_page.dart';
 import 'package:cinnamon_clay_admin/src/site_settings/site_settings_page.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
         children: <Widget>[
           CatalogPage(identity: widget.identity),
           SiteSettingsPage(identity: widget.identity),
+          MediaPage(identity: widget.identity),
           ReviewsPage(identity: widget.identity),
         ],
       ),
@@ -40,6 +42,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
             icon: Icon(Icons.storefront_outlined),
             selectedIcon: Icon(Icons.storefront),
             label: 'Site',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.photo_library_outlined),
+            selectedIcon: Icon(Icons.photo_library),
+            label: 'Media',
           ),
           NavigationDestination(
             icon: Icon(Icons.rate_review_outlined),

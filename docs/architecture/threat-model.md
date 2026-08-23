@@ -38,11 +38,13 @@
 - public visibility is controlled server-side rather than trusted to Flutter UI state;
 - administrator-managed map and social URLs are restricted to HTTPS, and WhatsApp numbers use E.164 when enabled;
 - destructive catalog/review actions use reversible hide/deactivate state instead of physical deletion.
+- media uploads are capped at the multipart and application layers, binary-sniffed as JPEG/PNG, dimension/pixel bounded and stored under server-generated object keys;
+- media replacement uses new-object-then-metadata-switch semantics with compensating cleanup, and orphan reconciliation uses an age grace period;
+- Hero/About singleton visibility is enforced in service logic and by a partial database uniqueness constraint.
 
 ## Controls backlog
 
 - output escaping and content restrictions
-- upload MIME/size/dimension validation
 - parameterized persistence APIs
 - Gitleaks and secret rotation runbook
 - CodeQL, dependency review, Dependabot, Trivy

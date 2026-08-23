@@ -1,6 +1,8 @@
 package dev.cinnamonandclay.cafe.media;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -8,6 +10,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Component
@@ -16,13 +19,14 @@ class S3MediaStorage implements MediaStorage {
     private final S3Client s3Client;
     private final MediaProperties properties;
 
-S3MediaStorage(
-        S3Client s3Client,
-        MediaProperties properties
-) {
-    this.s3Client = s3Client;
-    this.properties = properties;
-}
+    S3MediaStorage(
+            S3Client s3Client,
+            MediaProperties properties
+    ) {
+        this.s3Client = s3Client;
+        this.properties = properties;
+    }
+
     @Override
     public void store(
             String objectKey,
@@ -43,14 +47,14 @@ S3MediaStorage(
     }
 
     @Override
-public InputStream open(String objectKey) {
-    var request = GetObjectRequest.builder()
-            .bucket(properties.bucket())
-            .key(objectKey)
-            .build();
+    public InputStream open(String objectKey) {
+        var request = GetObjectRequest.builder()
+                .bucket(properties.bucket())
+                .key(objectKey)
+                .build();
 
-    return s3Client.getObject(request);
-}
+        return s3Client.getObject(request);
+    }
 
     @Override
     public void delete(String objectKey) {
@@ -62,4 +66,21 @@ public InputStream open(String objectKey) {
         s3Client.deleteObject(request);
     }
 
+    @Override
+    public List<StoredObject> list(String prefix) {
+        var request = ListObjectsV2Request.builder()
+                .bucket(properties.bucket())
+                .prefix(prefix)
+                .build();
+
+        List<StoredObject> objects = new ArrayList<>();
+        s3Client.listObjectsV2Paginator(request)
+                .contents()
+                .forEach(object -> objects.add(new StoredObject(
+                        object.key(),
+                        object.lastModified(),
+                        object.size() == null ? 0 : object.size()
+                )));
+        return List.copyOf(objects);
+    }
 }

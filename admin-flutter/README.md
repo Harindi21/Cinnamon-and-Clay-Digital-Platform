@@ -7,7 +7,8 @@ The authentication layer uses:
 - `flutter_appauth` for browser-based OIDC and PKCE;
 - `flutter_secure_storage` for access, refresh and ID token storage;
 - Riverpod for asynchronous session state;
-- Dio for public and authenticated API clients.
+- Dio for public and authenticated API clients;
+- `file_selector` for native administrator image selection.
 
 ## Local Android setup
 
@@ -28,7 +29,7 @@ The script:
 6. enables cleartext traffic only in the debug manifest;
 7. runs `flutter pub get`.
 
-The generated `android/` directory is part of the application once authentication is introduced and should be reviewed and committed. Native redirect/security configuration is production code, not disposable local scaffolding.
+The generated `android/` directory is part of the application once authentication is introduced and should be reviewed and committed. Native redirect/security configuration is production code, not disposable local scaffolding. The same runner hosts the native file selector used by Media management.
 
 Follow:
 

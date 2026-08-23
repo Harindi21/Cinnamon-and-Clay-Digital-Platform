@@ -45,13 +45,14 @@ class MediaService {
         return new MediaContent(
                 asset.contentType(),
                 asset.sizeBytes(),
+                asset.checksumSha256(),
                 storage.open(asset.objectKey())
         );
     }
 
     private MediaResponse first(MediaPurpose purpose) {
         return repository
-                .findByPurposeAndActiveTrueOrderBySortOrderAsc(purpose)
+                .findByPurposeAndActiveTrueOrderBySortOrderAscIdAsc(purpose)
                 .stream()
                 .findFirst()
                 .map(this::toResponse)
@@ -60,7 +61,7 @@ class MediaService {
 
     private List<MediaResponse> list(MediaPurpose purpose) {
         return repository
-                .findByPurposeAndActiveTrueOrderBySortOrderAsc(purpose)
+                .findByPurposeAndActiveTrueOrderBySortOrderAscIdAsc(purpose)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -70,7 +71,10 @@ class MediaService {
         return new MediaResponse(
                 entity.id().toString(),
                 "/api/v1/media/" + entity.id() + "/content",
-                entity.altText()
+                entity.altText(),
+                entity.widthPixels(),
+                entity.heightPixels(),
+                entity.version()
         );
     }
 
@@ -84,13 +88,17 @@ class MediaService {
     record MediaResponse(
             String id,
             String url,
-            String alt
+            String alt,
+            Integer width,
+            Integer height,
+            long version
     ) {
     }
 
     record MediaContent(
             String contentType,
             long sizeBytes,
+            String checksumSha256,
             InputStream stream
     ) {
     }

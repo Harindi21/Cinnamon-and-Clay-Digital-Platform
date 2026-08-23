@@ -44,15 +44,20 @@ class MediaController {
             }
         };
 
-        return ResponseEntity.ok()
-                .contentType(
-                        MediaType.parseMediaType(content.contentType())
-                )
+        ResponseEntity.BodyBuilder response = ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(content.contentType()))
                 .contentLength(content.sizeBytes())
                 .cacheControl(
                         CacheControl.maxAge(Duration.ofDays(7))
                                 .cachePublic()
                 )
-                .body(body);
+                .header("X-Content-Type-Options", "nosniff");
+
+        if (content.checksumSha256() != null
+                && !content.checksumSha256().isBlank()) {
+            response.eTag('"' + content.checksumSha256() + '"');
+        }
+
+        return response.body(body);
     }
 }

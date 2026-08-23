@@ -51,6 +51,7 @@ export async function GET(
     const contentType = upstream.headers.get('content-type');
     const contentLength = upstream.headers.get('content-length');
     const cacheControl = upstream.headers.get('cache-control');
+    const etag = upstream.headers.get('etag');
 
     if (contentType) {
       headers.set('Content-Type', contentType);
@@ -58,6 +59,10 @@ export async function GET(
 
     if (contentLength) {
       headers.set('Content-Length', contentLength);
+    }
+
+    if (etag) {
+      headers.set('ETag', etag);
     }
 
     headers.set(

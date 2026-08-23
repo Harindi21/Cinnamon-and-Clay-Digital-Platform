@@ -3,6 +3,8 @@ import 'package:cinnamon_clay_admin/src/auth/auth_models.dart';
 import 'package:cinnamon_clay_admin/src/auth/auth_repository.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_repository.dart';
+import 'package:cinnamon_clay_admin/src/media/media_models.dart';
+import 'package:cinnamon_clay_admin/src/media/media_repository.dart';
 import 'package:cinnamon_clay_admin/src/reviews/review_models.dart';
 import 'package:cinnamon_clay_admin/src/reviews/review_repository.dart';
 import 'package:cinnamon_clay_admin/src/site_settings/site_settings_models.dart';
@@ -45,6 +47,9 @@ void main() {
           ),
           catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
           reviewsProvider.overrideWith((ref) async => const <AdminReview>[]),
+          mediaProvider.overrideWith(
+            (ref) async => const MediaSnapshot(<AdminMediaAsset>[]),
+          ),
           siteSettingsProvider.overrideWith(
             (ref) async => _siteSettingsFixture,
           ),
@@ -57,12 +62,17 @@ void main() {
 
     expect(find.text('Catalog'), findsWidgets);
     expect(find.text('Site'), findsOneWidget);
+    expect(find.text('Media'), findsOneWidget);
     expect(find.text('Reviews'), findsOneWidget);
 
     await tester.tap(find.text('Site'));
     await tester.pumpAndSettle();
     expect(find.text('Site settings'), findsOneWidget);
     expect(find.text('Brand & public copy'), findsOneWidget);
+
+    await tester.tap(find.text('Media'));
+    await tester.pumpAndSettle();
+    expect(find.text('Managed website media'), findsOneWidget);
 
     await tester.tap(find.text('Reviews'));
     await tester.pumpAndSettle();

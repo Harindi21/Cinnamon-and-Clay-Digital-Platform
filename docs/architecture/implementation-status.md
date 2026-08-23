@@ -11,7 +11,8 @@ This document keeps portfolio claims aligned with code that exists in the reposi
 | Admin content/contact | Complete | Flutter Site settings management with resource-level optimistic concurrency. |
 | Reviews | Complete | Draft/published/hidden lifecycle, public filtering and Flutter moderation. |
 | OIDC/RBAC | Complete for portfolio scope | Keycloak local environment, PKCE native login, JWT resource server and API-client roles. Production IdP/environment configuration remains deployment work. |
-| Media public read path | Partial | Metadata model, S3-compatible storage abstraction and public streaming exist. Admin upload/update/delete flow, MIME/size/dimension validation, image processing and orphan cleanup are still required. |
+| Native admin runner | Partial | Flutter/Dart application code and `tool/bootstrap_android.ps1` are present, but the generated/reviewed `admin-flutter/android/` runner still needs to be committed for clone-and-run Android builds. |
+| Media lifecycle | Complete for portfolio scope | S3-compatible storage + PostgreSQL metadata, Flutter upload/edit/replace/hide, binary sniffing, byte/dimension/pixel limits, SHA-256 metadata, singleton placement invariants, versioned cache busting and admin-only orphan reconciliation. Next.js `Image` performs delivery optimization. |
 | Observability | Partial | Actuator health and Prometheus endpoint exist. Structured JSON logging, trace propagation, dashboards and alerting are not complete. |
 | Audit trail | Not started | Append-only administrator audit records and actor/change metadata are still required. |
 | Backup / recovery | Partial | Runbook exists. Automated backups, restore rehearsal evidence and recovery objectives remain. |
@@ -21,10 +22,9 @@ This document keeps portfolio claims aligned with code that exists in the reposi
 
 ## Recommended next sequence
 
-1. Complete administrator media management and upload hardening.
-2. Add append-only admin audit events with actor, action, target, timestamp and safe before/after metadata.
-3. Add cache invalidation for successful content publication instead of relying only on the five-minute public revalidation window.
-4. Add structured logging/tracing, dashboards and a small set of service-level indicators.
-5. Build the release workflow: immutable image tags, SBOM/provenance, signing, environment promotion, smoke test and rollback.
-6. Add browser/admin E2E tests plus Lighthouse/accessibility evidence.
-7. Produce the portfolio release: screenshots, demo video and concise case study.
+1. Add append-only admin audit events with actor, action, target, timestamp and safe before/after metadata.
+2. Add cache invalidation for successful content publication instead of relying only on the five-minute public revalidation window.
+3. Add structured logging/tracing, dashboards and a small set of service-level indicators.
+4. Build the release workflow: immutable image tags, SBOM/provenance, signing, environment promotion, smoke test and rollback.
+5. Add browser/admin E2E tests plus Lighthouse/accessibility evidence.
+6. Produce the portfolio release: screenshots, demo video and concise case study.
