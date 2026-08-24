@@ -2,6 +2,8 @@ package dev.cinnamonandclay.cafe.audit;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -23,6 +25,9 @@ import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
 @Service
 class AuditQueryService {
+
+    private static final int MIN_PAGE_SIZE = 1;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private static final String SELECT_COLUMNS = """
             SELECT
@@ -85,11 +90,11 @@ class AuditQueryService {
         }
         if (filter.from() != null) {
             conditions.add("occurred_at >= :from");
-            parameters.addValue("from", filter.from());
+            parameters.addValue("from", toDatabaseTimestamp(filter.from()));
         }
         if (filter.to() != null) {
             conditions.add("occurred_at <= :to");
-            parameters.addValue("to", filter.to());
+            parameters.addValue("to", toDatabaseTimestamp(filter.to()));
         }
         if (filter.from() != null && filter.to() != null
                 && filter.from().isAfter(filter.to())) {
@@ -104,12 +109,16 @@ class AuditQueryService {
                         OR (occurred_at = :cursorOccurredAt AND id < :cursorId)
                     )
                     """);
-            parameters.addValue("cursorOccurredAt", cursor.occurredAt());
+            parameters.addValue(
+                    "cursorOccurredAt",
+                    toDatabaseTimestamp(cursor.occurredAt())
+            );
             parameters.addValue("cursorId", cursor.id());
         }
 
-        int requestedLimit = filter.limit();
-        parameters.addValue("limit", requestedLimit + 1);
+        int requestedLimit = validatePageSize(filter.limit());
+        long queryLimit = (long) requestedLimit + 1L;
+        parameters.addValue("limit", queryLimit);
 
         StringBuilder sql = new StringBuilder(SELECT_COLUMNS);
         if (!conditions.isEmpty()) {
@@ -242,6 +251,23 @@ class AuditQueryService {
         } catch (JacksonException exception) {
             throw new IllegalStateException("Unable to read audit JSON.", exception);
         }
+    }
+
+    private static int validatePageSize(int limit) {
+        if (limit < MIN_PAGE_SIZE || limit > MAX_PAGE_SIZE) {
+            throw new InvalidRequestException(
+                    "Audit page size must be between "
+                            + MIN_PAGE_SIZE
+                            + " and "
+                            + MAX_PAGE_SIZE
+                            + "."
+            );
+        }
+        return limit;
+    }
+
+    private static OffsetDateTime toDatabaseTimestamp(Instant instant) {
+        return instant.atOffset(ZoneOffset.UTC);
     }
 
     private static boolean hasText(String value) {
