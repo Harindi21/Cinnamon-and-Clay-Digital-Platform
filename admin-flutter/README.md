@@ -1,43 +1,37 @@
 # Cinnamon & Clay admin
 
-The Flutter administrator application uses OIDC Authorization Code + PKCE for staff authentication and the Spring API for authorization.
+The Flutter administrator application is the staff-facing control plane for the platform. It uses OIDC Authorization Code + PKCE for authentication and the Spring API for all authorization and persistence decisions.
 
-The authentication layer uses:
+Current administrator workspaces cover:
 
-- `flutter_appauth` for browser-based OIDC and PKCE;
-- `flutter_secure_storage` for access, refresh and ID token storage;
-- Riverpod for asynchronous session state;
-- Dio for public and authenticated API clients;
-- `file_selector` for native administrator image selection.
+- catalog/menu management;
+- site content, contact details, hours and social links;
+- media upload, replacement, placement, hide/reactivate and object-storage maintenance;
+- review moderation;
+- administrator-only, read-only audit history with actor, action, resource, request/trace IDs and before/after state.
+
+The application uses `flutter_appauth` for browser-based OIDC + PKCE, `flutter_secure_storage` for token storage, Riverpod for session/application state, Dio for authenticated APIs, and `file_selector` for native image selection. Every API request also carries a bounded `X-Request-Id` so user-visible failures can be correlated with backend logs and audit events.
 
 ## Local Android setup
 
-After applying the authentication source changes, commit them first. Then generate and configure the Android platform from the repository root:
+The repository intentionally keeps native runner generation explicit so it is produced by the team's installed Flutter SDK and reviewed as native production code. From the repository root:
 
 ```powershell
 Set-Location admin-flutter
 powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
 ```
 
-The script:
+The script generates the Android platform, preserves repository-owned Dart source, sets Android API 23 for secure storage, registers the AppAuth redirect scheme, disables Android application backup for auth storage, enables cleartext traffic only in the debug manifest, and runs `flutter pub get`.
 
-1. generates the Android Flutter platform;
-2. preserves the repository-owned Dart source;
-3. sets Android API 23 for secure storage;
-4. registers the AppAuth redirect scheme;
-5. disables Android application backup for auth storage;
-6. enables cleartext traffic only in the debug manifest;
-7. runs `flutter pub get`.
+Once reviewed, commit `admin-flutter/android/`. The same runner hosts the native media file selector.
 
-The generated `android/` directory is part of the application once authentication is introduced and should be reviewed and committed. Native redirect/security configuration is production code, not disposable local scaffolding. The same runner hosts the native file selector used by Media management.
+For normal local development after that, the root helper configures ADB port reversal and all Dart defines from `.env`:
 
-Follow:
-
-```text
-docs/runbooks/admin-oidc-local.md
+```powershell
+./tools/dev.ps1 admin
 ```
 
-for infrastructure, ADB port reversal, run arguments and expected authentication behavior.
+See `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/local-development.md` for the complete flow.
 
 ## Quality checks
 
@@ -47,4 +41,4 @@ flutter analyze
 flutter test
 ```
 
-The application does not contain a password form and does not store administrator passwords. Authentication is delegated to the configured OIDC provider; authorization remains enforced by the Spring API.
+The application does not contain a password form and does not store administrator passwords. Authentication is delegated to the configured OIDC provider; authorization remains enforced by the Spring API. The audit workspace is intentionally administrator-only even though editors can perform ordinary content operations.

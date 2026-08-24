@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cinnamon_clay_admin/src/auth/auth_controller.dart';
 import 'package:cinnamon_clay_admin/src/core/environment.dart';
 import 'package:dio/dio.dart';
@@ -42,8 +44,10 @@ final adminApiClientProvider = Provider<Dio>((ref) {
   return dio;
 });
 
+final Random _secureRandom = Random.secure();
+
 Dio _newApiClient() {
-  return Dio(
+  final dio = Dio(
     BaseOptions(
       baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 5),
@@ -51,4 +55,25 @@ Dio _newApiClient() {
       headers: const <String, String>{'Accept': 'application/json'},
     ),
   );
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        options.headers['X-Request-Id'] = _newRequestId();
+        handler.next(options);
+      },
+    ),
+  );
+
+  return dio;
+}
+
+String _newRequestId() {
+  final randomPart = List<int>.generate(
+    12,
+    (_) => _secureRandom.nextInt(256),
+    growable: false,
+  ).map((value) => value.toRadixString(16).padLeft(2, '0')).join();
+
+  return 'admin-${DateTime.now().microsecondsSinceEpoch}-$randomPart';
 }

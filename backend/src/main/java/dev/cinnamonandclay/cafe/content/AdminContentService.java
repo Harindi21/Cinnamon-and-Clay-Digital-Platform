@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
@@ -18,15 +20,18 @@ class AdminContentService {
     private final SiteContentRepository siteRepository;
     private final AboutParagraphRepository paragraphRepository;
     private final SiteFeatureRepository featureRepository;
+    private final AuditTrail auditTrail;
 
     AdminContentService(
             SiteContentRepository siteRepository,
             AboutParagraphRepository paragraphRepository,
-            SiteFeatureRepository featureRepository
+            SiteFeatureRepository featureRepository,
+            AuditTrail auditTrail
     ) {
         this.siteRepository = siteRepository;
         this.paragraphRepository = paragraphRepository;
         this.featureRepository = featureRepository;
+        this.auditTrail = auditTrail;
     }
 
     @Transactional(readOnly = true)
@@ -38,6 +43,7 @@ class AdminContentService {
     SiteResponse updateSite(UpdateSiteCommand command) {
         SiteContentEntity site = requireSite();
         assertVersion(site.version(), command.version(), "site content");
+        SiteResponse before = toSite(site);
         site.update(
                 normalize(command.brandName()),
                 normalize(command.tagline()),
@@ -45,7 +51,15 @@ class AdminContentService {
                 normalize(command.menuNote()),
                 normalize(command.aboutTitle())
         );
-        return toSite(siteRepository.saveAndFlush(site));
+        SiteResponse after = toSite(siteRepository.saveAndFlush(site));
+        auditTrail.record(
+                AuditAction.UPDATE,
+                "content.site",
+                SITE_ID,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
@@ -57,7 +71,15 @@ class AdminContentService {
                 command.sortOrder(),
                 command.active()
         );
-        return toParagraph(paragraphRepository.saveAndFlush(paragraph));
+        ParagraphResponse created = toParagraph(paragraphRepository.saveAndFlush(paragraph));
+        auditTrail.record(
+                AuditAction.CREATE,
+                "content.about-paragraph",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -67,20 +89,37 @@ class AdminContentService {
     ) {
         AboutParagraphEntity paragraph = requireParagraph(paragraphId);
         assertVersion(paragraph.version(), command.version(), "about paragraph");
+        ParagraphResponse before = toParagraph(paragraph);
         paragraph.update(
                 normalize(command.body()),
                 command.sortOrder(),
                 command.active()
         );
-        return toParagraph(paragraphRepository.saveAndFlush(paragraph));
+        ParagraphResponse after = toParagraph(paragraphRepository.saveAndFlush(paragraph));
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "content.about-paragraph",
+                paragraphId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateParagraph(UUID paragraphId, long version) {
         AboutParagraphEntity paragraph = requireParagraph(paragraphId);
         assertVersion(paragraph.version(), version, "about paragraph");
+        ParagraphResponse before = toParagraph(paragraph);
         paragraph.deactivate();
-        paragraphRepository.saveAndFlush(paragraph);
+        ParagraphResponse after = toParagraph(paragraphRepository.saveAndFlush(paragraph));
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "content.about-paragraph",
+                paragraphId,
+                before,
+                after
+        );
     }
 
     @Transactional
@@ -94,7 +133,15 @@ class AdminContentService {
                 command.sortOrder(),
                 command.active()
         );
-        return toFeature(featureRepository.saveAndFlush(feature));
+        FeatureResponse created = toFeature(featureRepository.saveAndFlush(feature));
+        auditTrail.record(
+                AuditAction.CREATE,
+                "content.feature",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -104,6 +151,7 @@ class AdminContentService {
     ) {
         SiteFeatureEntity feature = requireFeature(featureId);
         assertVersion(feature.version(), command.version(), "site feature");
+        FeatureResponse before = toFeature(feature);
         feature.update(
                 command.icon().trim(),
                 normalize(command.title()),
@@ -111,15 +159,31 @@ class AdminContentService {
                 command.sortOrder(),
                 command.active()
         );
-        return toFeature(featureRepository.saveAndFlush(feature));
+        FeatureResponse after = toFeature(featureRepository.saveAndFlush(feature));
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "content.feature",
+                featureId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateFeature(UUID featureId, long version) {
         SiteFeatureEntity feature = requireFeature(featureId);
         assertVersion(feature.version(), version, "site feature");
+        FeatureResponse before = toFeature(feature);
         feature.deactivate();
-        featureRepository.saveAndFlush(feature);
+        FeatureResponse after = toFeature(featureRepository.saveAndFlush(feature));
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "content.feature",
+                featureId,
+                before,
+                after
+        );
     }
 
     private AdminContentResponse response(SiteContentEntity site) {
@@ -170,6 +234,16 @@ class AdminContentService {
                             + " changed after it was loaded. Refresh and try again."
             );
         }
+    }
+
+    private static AuditAction activeChangeAction(boolean before, boolean after) {
+        if (!before && after) {
+            return AuditAction.REACTIVATE;
+        }
+        if (before && !after) {
+            return AuditAction.DEACTIVATE;
+        }
+        return AuditAction.UPDATE;
     }
 
     private static String normalize(String value) {

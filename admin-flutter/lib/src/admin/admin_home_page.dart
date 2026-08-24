@@ -1,3 +1,4 @@
+import 'package:cinnamon_clay_admin/src/audit/audit_page.dart';
 import 'package:cinnamon_clay_admin/src/auth/auth_models.dart';
 import 'package:cinnamon_clay_admin/src/catalog/catalog_page.dart';
 import 'package:cinnamon_clay_admin/src/media/media_page.dart';
@@ -27,32 +28,42 @@ class _AdminHomePageState extends State<AdminHomePage> {
           SiteSettingsPage(identity: widget.identity),
           MediaPage(identity: widget.identity),
           ReviewsPage(identity: widget.identity),
+          if (widget.identity.hasRole('admin'))
+            _index == 4
+                ? AuditPage(identity: widget.identity)
+                : const SizedBox.shrink(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (value) => setState(() => _index = value),
-        destinations: const <NavigationDestination>[
-          NavigationDestination(
+        destinations: <NavigationDestination>[
+          const NavigationDestination(
             icon: Icon(Icons.restaurant_menu_outlined),
             selectedIcon: Icon(Icons.restaurant_menu),
             label: 'Catalog',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.storefront_outlined),
             selectedIcon: Icon(Icons.storefront),
             label: 'Site',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.photo_library_outlined),
             selectedIcon: Icon(Icons.photo_library),
             label: 'Media',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.rate_review_outlined),
             selectedIcon: Icon(Icons.rate_review),
             label: 'Reviews',
           ),
+          if (widget.identity.hasRole('admin'))
+            const NavigationDestination(
+              icon: Icon(Icons.history_outlined),
+              selectedIcon: Icon(Icons.history),
+              label: 'Audit',
+            ),
         ],
       ),
     );

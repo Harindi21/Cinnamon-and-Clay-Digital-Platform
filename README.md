@@ -1,139 +1,117 @@
-# Cinnamon & Clay Platform
+# Cinnamon & Clay Digital Platform
 
-Cinnamon & Clay is a full-stack cafe management platform consisting of a public customer website, a mobile administration application, a Spring Boot API, PostgreSQL persistence, and S3-compatible media storage.
+Cinnamon & Clay is a portfolio-grade cafe digital platform with a customer website, a native administration application, a Spring Boot modular-monolith API, PostgreSQL, OIDC-based administrator security, and S3-compatible media storage.
 
-The system is designed as a modular monolith with clear domain boundaries, documented architectural decisions, automated testing, and production-oriented operational practices.
+The repository is deliberately organized around **end-to-end product slices plus operational evidence** rather than a technology showcase. Architecture decisions, concurrency rules, threat controls, auditability, recovery procedures and CI policy live beside the code.
 
-## Architecture
+## System at a glance
 
 ```text
-                         ┌─────────────────────┐
-                         │   Public Website    │
-                         │      Next.js        │
-                         └──────────┬──────────┘
-                                    │
-                                    │ REST
-                                    ▼
-┌─────────────────────┐   ┌─────────────────────┐
-│     Admin App       │   │    Spring Boot      │
-│      Flutter        │──▶│   Modular Monolith  │
-└─────────────────────┘   └──────────┬──────────┘
-                                     │
-                         ┌───────────┴───────────┐
-                         │                       │
-                         ▼                       ▼
-                ┌─────────────────┐     ┌─────────────────┐
-                │   PostgreSQL    │     │ S3-compatible   │
-                │ structured data │     │ object storage  │
-                └─────────────────┘     └─────────────────┘
+                                ┌──────────────────────┐
+                                │ Customer Website     │
+                                │ Next.js              │
+                                └──────────┬───────────┘
+                                           │ public REST
+                                           │ + tagged cache
+                                           ▼
+┌──────────────────────┐       ┌─────────────────────────────┐
+│ Flutter Admin        │──────▶│ Spring Boot Modular Monolith│
+│ OIDC + PKCE          │ JWT   │ Java 21 / REST / Actuator  │
+└──────────┬───────────┘       └───────┬───────────┬─────────┘
+           │                            │           │
+           ▼                            ▼           ▼
+┌──────────────────────┐       ┌──────────────┐  ┌──────────────────┐
+│ OIDC Provider        │       │ PostgreSQL   │  │ S3-compatible    │
+│ Keycloak locally     │       │ + audit log  │  │ media / MinIO    │
+└──────────────────────┘       └──────────────┘  └──────────────────┘
+                                           │
+                                ┌───────────▼───────────┐
+                                │ Prometheus / Grafana  │
+                                │ optional local profile│
+                                └───────────────────────┘
 ```
 
-### Applications
+## Applications
 
-* **`public-web`** — customer-facing website built with Next.js.
-* **`admin-flutter`** — Flutter application for cafe administration.
-* **`backend`** — Spring Boot REST API and domain logic.
-* **`infra`** — local infrastructure and container configuration.
+- **`public-web`** — Next.js customer-facing website.
+- **`admin-flutter`** — Flutter administrator/editor application.
+- **`backend`** — Spring Boot REST API and modular domain logic.
+- **`infra`** — PostgreSQL, MinIO, Keycloak and optional observability infrastructure.
+- **`tools`** — repeatable local-development and database recovery scripts.
+- **`docs`** — ADRs, architecture views, threat model, operational objectives and runbooks.
 
-### Engineering documentation
+## Implemented capabilities
 
-* **`docs/adrs`** — Architecture Decision Records.
-* **`docs/architecture`** — system, data, and delivery architecture.
-* **`docs/runbooks`** — operational and recovery procedures.
-* **`.github`** — CI, security automation, repository policies, and contribution workflows.
+### Customer experience
 
----
+- database-backed menu and pricing;
+- persisted brand/about/contact/opening-hours/social/WhatsApp content;
+- managed Hero/About/Gallery media;
+- published reviews only;
+- responsive Next.js presentation with explicit error handling;
+- capability-tagged server cache with a five-minute safety TTL;
+- targeted after-commit revalidation when administrators publish changes.
 
-## Current capabilities
+### Administrator application
 
-### Administrator security
+- OIDC Authorization Code + PKCE login;
+- server-side `EDITOR` / `ADMIN` authorization;
+- catalog create/edit/reorder/hide/reactivate;
+- site/content/contact/opening-hour/social management;
+- review create/edit/publish/hide lifecycle;
+- media upload/edit/replace/hide/reactivate and administrator orphan cleanup;
+- resource-level optimistic concurrency with `409` conflict handling;
+- administrator-only searchable audit trail with before/after details.
 
-Administrative API boundaries use OpenID Connect bearer tokens and server-side role-based authorization.
+### Media safety
 
-Local development uses Keycloak while the backend remains coupled to the OIDC contract rather than a provider-specific adapter.
+Media binaries live in S3-compatible object storage while PostgreSQL stores metadata and object keys. The backend:
 
-### Public website
+- accepts JPEG/PNG for the current product scope;
+- validates the binary signature rather than trusting filename/MIME claims;
+- enforces request byte, image dimension and total-pixel limits;
+- generates server-owned object keys;
+- stores SHA-256 metadata;
+- uses new-object-then-metadata-switch replacement semantics;
+- compensates failed cross-store writes and provides aged orphan reconciliation;
+- enforces single active Hero/About placements in application and database constraints.
 
-The public website retrieves business content from the backend rather than embedding cafe data directly in the frontend.
+See `docs/adrs/0011-harden-admin-media-lifecycle.md`.
 
-Current capabilities include:
+### Auditability and operations
 
-* menu and pricing;
-* cafe information and brand content;
-* opening hours and contact information;
-* social and WhatsApp links;
-* managed hero, about, and gallery media;
-* responsive customer-facing UI;
-* runtime backend integration;
-* graceful loading and error states.
+Successful administrator changes produce append-only PostgreSQL audit events containing actor identity/roles, action/resource, bounded sanitized before/after state, request ID and trace ID. PostgreSQL rejects update/delete/truncate of the audit table.
 
-### Catalog
+Operational instrumentation includes:
 
-Menu categories and items are stored in PostgreSQL and exposed through a versioned REST API.
+- `X-Request-Id` propagation/generation;
+- request/trace IDs in HTTP Problem Details;
+- Spring tracing instrumentation with optional OTLP export;
+- Prometheus Actuator metrics plus application counters;
+- ECS structured console logs in the production profile;
+- optional local Prometheus/Grafana stack, dashboard and alert rules;
+- executable PostgreSQL backup, restore and isolated restore-rehearsal scripts.
 
-The catalog supports:
-
-* explicit display ordering;
-* active/inactive records;
-* integer minor-unit money representation;
-* currency codes;
-* authenticated administrator create/edit/hide/reorder flows;
-* optimistic concurrency protection for administrator writes.
-
-### Reviews
-
-Reviews support an editorial lifecycle with administrator moderation.
-
-The administrator application can create, edit, publish and hide reviews while the public API exposes only published records. Review writes use optimistic concurrency protection.
-
-### Content and contact information
-
-Cafe content is managed as structured data, including:
-
-* brand information;
-* about content;
-* feature highlights;
-* contact details;
-* opening hours;
-* social links;
-* WhatsApp configuration;
-* authenticated Flutter management of brand/about/contact/hours/social settings with optimistic concurrency.
-
-### Media
-
-Media metadata is stored in PostgreSQL while image binaries are stored in S3-compatible object storage.
-
-Local development uses MinIO.
-
-The media lifecycle now includes authenticated Flutter upload, metadata editing, binary replacement, reversible hide/reactivate behavior and administrator-only orphan reconciliation. The backend sniffs JPEG/PNG content, enforces byte/dimension/pixel limits, generates safe object keys, records SHA-256 metadata and uses optimistic concurrency for media mutations. Next.js `Image` remains responsible for responsive delivery optimization rather than duplicating a pre-generated object-storage variant matrix. See `docs/adrs/0011-harden-admin-media-lifecycle.md`.
-
----
+See `docs/adrs/0012-use-append-only-administrator-audit-events.md`, `docs/adrs/0013-use-after-commit-public-cache-invalidation.md`, `docs/adrs/0014-standardize-correlation-metrics-and-local-observability.md`, and `docs/runbooks/backend-incident.md`.
 
 ## Technology stack
 
-| Area                      | Technology                          |
-| ------------------------- | ----------------------------------- |
-| Public web                | Next.js, React, TypeScript          |
-| Admin application         | Flutter, Dart                       |
-| Backend                   | Java 21, Spring Boot                |
-| Architecture              | Spring Modulith                     |
-| Persistence               | PostgreSQL                          |
-| Database migrations       | Flyway                              |
-| Object storage            | S3-compatible storage / MinIO       |
-| Backend integration tests | Testcontainers                      |
-| Local infrastructure      | Docker Compose                      |
-| CI/CD                     | GitHub Actions                      |
-| Security scanning         | CodeQL, Trivy, Gitleaks, Dependabot |
+| Area | Technology |
+| --- | --- |
+| Public web | Next.js 16, React 19, TypeScript |
+| Admin application | Flutter, Dart, Riverpod, Dio |
+| Backend | Java 21, Spring Boot 4, Spring Modulith |
+| Persistence | PostgreSQL 18, Flyway |
+| Identity | OIDC/OAuth2 resource server, Keycloak locally |
+| Media | S3-compatible API / MinIO locally |
+| Testing | JUnit, MockMvc, Testcontainers, Flutter tests |
+| Metrics | Micrometer, Prometheus, Grafana |
+| Tracing | Spring Boot OpenTelemetry instrumentation, opt-in OTLP export |
+| CI/security | GitHub Actions, CodeQL, Trivy, Gitleaks, Dependabot |
 
----
+## Backend module boundaries
 
-## Backend architecture
-
-The backend is implemented as a modular monolith.
-
-Domain capabilities are separated into modules rather than distributing the system across independently deployed services.
-
-This keeps deployment and operations straightforward while preserving clear boundaries between areas such as:
+The backend remains a modular monolith rather than being split into premature microservices:
 
 ```text
 catalog
@@ -143,63 +121,19 @@ media
 reviews
 identity
 audit
+publishing
+shared
 ```
 
-Module boundaries are verified automatically using Spring Modulith architecture tests.
-
-API endpoints are versioned under:
-
-```text
-/api/v1
-```
-
-Errors use HTTP Problem Details where applicable.
-
----
-
-## Data storage
-
-PostgreSQL stores structured business data.
-
-Examples include:
-
-* menu categories and items;
-* site content;
-* contact information;
-* opening hours;
-* social links;
-* media metadata;
-* review data.
-
-Media binaries are stored separately in object storage.
-
-Database schema changes are managed through immutable Flyway migrations.
-
-See:
-
-```text
-docs/architecture/data-model.md
-```
-
-for the current persistent data model.
-
----
+Spring Modulith architecture verification runs in the backend test suite. Public and administrator APIs are versioned under `/api/v1`.
 
 ## Local development
 
 ### Prerequisites
 
-Install:
+Install Git, Docker Desktop, Java 21, Maven, Node.js 24+, npm and Flutter stable. Android administration also requires the Android SDK/ADB and an emulator or device.
 
-* Git
-* Docker Desktop
-* Java 21
-* Maven 3.6.3 or later
-* Node.js 24 LTS
-* npm
-* Flutter stable
-
-### Configure the environment
+### 1. Configure
 
 From the repository root:
 
@@ -207,233 +141,185 @@ From the repository root:
 Copy-Item .env.example .env
 ```
 
-Review `.env` before starting the services.
+The checked-in local defaults intentionally avoid common workstation conflicts:
 
-### Start local infrastructure
-
-```powershell
-docker compose --env-file .env -f infra/compose.yaml up -d
+```text
+PostgreSQL host port  55432
+Spring Boot           8082
+Keycloak              8081
+Next.js               3000
+MinIO API             9000
+MinIO console         9001
+Grafana               3001 (optional)
+Prometheus             9090 (optional)
 ```
 
-This starts the local infrastructure required for development, including PostgreSQL, MinIO and Keycloak.
+All values are environment-configurable.
 
-Verify the local OIDC provider:
-
-```powershell
-Invoke-RestMethod `
-  http://localhost:8081/realms/cinnamon-clay/.well-known/openid-configuration
-```
-
-### Run the backend
-
-In a new terminal:
+### 2. Start infrastructure
 
 ```powershell
-Set-Location backend
-
-$env:DB_URL = "jdbc:postgresql://localhost:5432/cinnamon_clay"
-$env:DB_USER = "cinnamon_clay"
-$env:DB_PASSWORD = "change-me-locally"
-
-mvn spring-boot:run
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 infra-up
 ```
 
-Verify the service:
+With the local observability stack:
 
 ```powershell
-Invoke-RestMethod http://localhost:8080/actuator/health
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 infra-up -Observability
 ```
 
-Verify the catalog API:
+### 3. Start the backend
+
+In terminal 2:
 
 ```powershell
-Invoke-RestMethod http://localhost:8080/api/v1/catalog/menu
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 backend
 ```
 
-### Media during local development
+Verify:
 
-Media is administered through the authenticated Flutter **Media** area. Uploads are stored in the local MinIO bucket while metadata remains in PostgreSQL; the public website reads only active media through the Spring API. Hero and About are singleton placements, while Gallery is ordered by `sort_order`. See `docs/runbooks/admin-media-management.md` for upload, replacement, hide/reactivate and orphan-reconciliation procedures.
+```powershell
+Invoke-RestMethod http://localhost:8082/actuator/health
+Invoke-RestMethod http://localhost:8082/api/v1/catalog/menu
+```
 
-### Run the public website
+### 4. Start the customer website
 
-In another terminal:
+Install dependencies once:
 
 ```powershell
 Set-Location public-web
-
-npm install
-
-$env:BACKEND_INTERNAL_URL = "http://localhost:8080"
-
-npm run dev
+npm ci
+Set-Location ..
 ```
 
-Open:
+Then, in terminal 3:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 web
+```
+
+Open `http://localhost:3000`.
+
+The launcher points Next.js to the configured backend port, so developers do not need to manually synchronize terminal-only `DB_*` / backend URL variables.
+
+### 5. Start the Flutter admin
+
+The generated Android runner is still an explicit repository packaging task. Generate it once if `admin-flutter/android/` is absent:
+
+```powershell
+Set-Location admin-flutter
+powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
+Set-Location ..
+```
+
+Start an emulator/device, then:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
+```
+
+The launcher configures ADB reverse mappings and the local API/OIDC `dart-define` values.
+
+See `docs/runbooks/local-development.md` and `docs/runbooks/admin-oidc-local.md`.
+
+## Local observability
+
+Start with `-Observability`, then open:
 
 ```text
-http://localhost:3000
+Prometheus  http://localhost:9090
+Grafana     http://localhost:3001
 ```
 
----
+Grafana is provisioned with the **Cinnamon & Clay · Service overview** dashboard. Local alert rules cover backend unavailability, elevated 5xx ratio and p95 latency guardrails.
+
+These are operational design controls, not claims about measured production SLO achievement. See `docs/architecture/service-level-objectives.md`.
+
+## Database backup / recovery
+
+Create a custom-format PostgreSQL backup plus SHA-256 metadata:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/backup-db.ps1
+```
+
+Rehearse a restore into an isolated temporary database:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/rehearse-restore.ps1 `
+  -BackupPath backups/cinnamon_clay-<timestamp>.dump
+```
+
+A destructive development restore requires an explicit `-Force` flag. See `docs/runbooks/database-backup-restore.md` before using it.
 
 ## Testing
 
-### Backend
-
-Run the complete backend verification suite:
+Backend:
 
 ```powershell
 Set-Location backend
 mvn verify
 ```
 
-Backend integration tests use PostgreSQL through Testcontainers.
-
-### Public website
+Public web:
 
 ```powershell
 Set-Location public-web
-
+npm ci
 npm run lint
 npm run build
 ```
 
-### Flutter application
+Flutter:
 
 ```powershell
 Set-Location admin-flutter
-
 flutter analyze
 flutter test
 ```
 
----
+CI also validates Docker Compose, Prometheus rules/config, Grafana dashboard JSON and PowerShell script syntax. With the local stack running, a lightweight HTTP smoke check is available:
 
-## Continuous integration
-
-Pull requests are validated automatically through GitHub Actions.
-
-Checks include:
-
-* backend compilation and tests;
-* Next.js linting and production build;
-* Flutter analysis and tests;
-* branch naming;
-* Conventional Commit validation;
-* PR title validation;
-* secret scanning;
-* static security analysis;
-* dependency and filesystem vulnerability scanning.
-
-Repository security automation includes:
-
-* CodeQL;
-* Gitleaks;
-* Trivy;
-* Dependabot.
-
----
-
-## Repository conventions
-
-Development uses short-lived branches.
-
-Supported branch prefixes include:
-
-```text
-feat/
-fix/
-docs/
-refactor/
-test/
-ci/
-chore/
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/smoke-local.ps1 -IncludeWeb
 ```
 
-Examples:
+## Repository policy and security
+
+Short-lived branches and Conventional Commits are enforced on pull requests. Examples:
 
 ```text
-feat/admin-auth
-fix/web-runtime-data
-docs/readme-refresh
+feat/audit-operational-readiness
+fix/web-backend-timeout
+ci/validate-observability
 ```
-
-Commit messages follow Conventional Commits:
 
 ```text
-feat(catalog): expose public menu endpoint
-fix(web): handle backend timeout
-test(media): cover inactive asset filtering
-docs(architecture): update persistent data model
+feat(audit): add append-only administrator history
+test(audit): cover authorization and pagination
+docs(operations): add restore rehearsal runbook
 ```
 
-Pull-request titles follow the same convention.
+Security automation includes CodeQL, Gitleaks, Trivy, dependency review and Dependabot. Administrator APIs enforce server-side RBAC; tokens are not stored by the backend; normal destructive business actions are reversible where product semantics permit it.
 
----
+See `SECURITY.md` and `docs/architecture/threat-model.md`.
 
 ## Architecture decisions
 
-Significant technical decisions are recorded as ADRs under:
+Significant decisions are recorded as ADRs under `docs/adrs`, including modular-monolith architecture, versioned REST, PostgreSQL/Flyway, OIDC, object storage, client presentation boundaries, authorization, optimistic concurrency, resource-oriented site administration, hardened media lifecycle, append-only auditing, cache invalidation and observability.
 
-```text
-docs/adrs
-```
+## Delivery status
 
-Topics include areas such as:
+The strongest remaining gaps are no longer core CRUD. They are release engineering and portfolio evidence:
 
-* application architecture;
-* persistence;
-* media storage;
-* authentication;
-* frontend responsibility boundaries;
-* deployment and operational decisions.
+1. commit/review the native Android runner;
+2. publish/sign immutable container images with SBOM/provenance and controlled promotion/rollback;
+3. add browser/admin E2E, accessibility and performance-budget evidence;
+4. capture a real restore rehearsal and production-like recovery objectives;
+5. create the final tagged portfolio release with screenshots, demo video and case-study narrative.
 
-ADRs document both the selected approach and the trade-offs behind it.
-
----
-
-## Security
-
-Security considerations and reporting guidance are documented in:
-
-```text
-SECURITY.md
-```
-
-The project follows several defence-in-depth practices, including:
-
-* automated secret scanning;
-* dependency vulnerability monitoring;
-* static analysis;
-* controlled public API exposure;
-* server-side validation;
-* database constraints;
-* separation of public and administrative capabilities;
-* OIDC-based administrator authentication and server-side role authorization;
-* optimistic concurrency checks for administrator-managed catalog, review, content and contact writes.
-
-Administrative write operations are isolated under authenticated `/api/v1/admin/**` endpoints.
-
----
-
-## Operations
-
-Operational procedures are maintained under:
-
-```text
-docs/runbooks
-```
-
-Runbooks cover areas such as:
-
-* local environment setup;
-* repository rules;
-* database operations;
-* backup and recovery procedures.
-
-Additional observability, deployment, rollback, and service-level documentation will be added alongside the corresponding operational capabilities.
-
----
+See `docs/architecture/implementation-status.md` for the claim-by-claim status matrix.
 
 ## License
 

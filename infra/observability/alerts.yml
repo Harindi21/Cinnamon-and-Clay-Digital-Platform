@@ -1,0 +1,40 @@
+groups:
+  - name: cinnamon-clay-backend
+    rules:
+      - alert: CinnamonClayBackendDown
+        expr: up{job="cinnamon-clay-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Cinnamon & Clay backend is unavailable
+          description: Prometheus has been unable to scrape the backend for 2 minutes.
+
+      - alert: CinnamonClayHighServerErrorRate
+        expr: |
+          (
+            sum(rate(http_server_requests_seconds_count{job="cinnamon-clay-backend",status=~"5.."}[5m]))
+            /
+            clamp_min(sum(rate(http_server_requests_seconds_count{job="cinnamon-clay-backend"}[5m])), 0.001)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Cinnamon & Clay backend 5xx ratio is high
+          description: More than 5% of backend requests have returned 5xx responses for 5 minutes.
+
+      - alert: CinnamonClayHighP95Latency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(http_server_requests_seconds_bucket{job="cinnamon-clay-backend"}[5m])
+            )
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Cinnamon & Clay backend p95 latency is high
+          description: Backend p95 request latency has exceeded 1 second for 5 minutes.

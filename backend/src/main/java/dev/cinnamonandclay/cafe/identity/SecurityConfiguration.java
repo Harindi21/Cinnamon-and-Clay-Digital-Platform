@@ -69,7 +69,9 @@ class SecurityConfiguration {
                                 .permitAll()
 
                                 .requestMatchers(
-                                        "/api/v1/admin/media/orphans"
+                                        "/api/v1/admin/media/orphans",
+                                        "/api/v1/admin/audit",
+                                        "/api/v1/admin/audit/**"
                                 )
                                 .hasRole("ADMIN")
 

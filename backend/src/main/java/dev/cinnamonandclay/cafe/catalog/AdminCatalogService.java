@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import dev.cinnamonandclay.cafe.audit.AuditAction;
+import dev.cinnamonandclay.cafe.audit.AuditTrail;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
@@ -17,13 +19,16 @@ class AdminCatalogService {
 
     private final MenuCategoryRepository categoryRepository;
     private final MenuItemRepository itemRepository;
+    private final AuditTrail auditTrail;
 
     AdminCatalogService(
             MenuCategoryRepository categoryRepository,
-            MenuItemRepository itemRepository
+            MenuItemRepository itemRepository,
+            AuditTrail auditTrail
     ) {
         this.categoryRepository = categoryRepository;
         this.itemRepository = itemRepository;
+        this.auditTrail = auditTrail;
     }
 
     @Transactional(readOnly = true)
@@ -74,7 +79,15 @@ class AdminCatalogService {
         );
 
         category = categoryRepository.saveAndFlush(category);
-        return toCategory(category, List.of());
+        AdminCategoryResponse created = toCategory(category, List.of());
+        auditTrail.record(
+                AuditAction.CREATE,
+                "catalog.category",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -94,6 +107,10 @@ class AdminCatalogService {
             );
         }
 
+        List<MenuItemEntity> beforeItems = itemRepository
+                .findByCategoryIdOrderBySortOrderAscNameAsc(categoryId);
+        AdminCategoryResponse before = toCategory(category, beforeItems);
+
         category.update(
                 slug,
                 name,
@@ -104,15 +121,33 @@ class AdminCatalogService {
         MenuCategoryEntity saved = categoryRepository.saveAndFlush(category);
         List<MenuItemEntity> items = itemRepository
                 .findByCategoryIdOrderBySortOrderAscNameAsc(categoryId);
-        return toCategory(saved, items);
+        AdminCategoryResponse after = toCategory(saved, items);
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "catalog.category",
+                categoryId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateCategory(UUID categoryId, long version) {
         MenuCategoryEntity category = requireCategory(categoryId);
         assertVersion(category.version(), version);
+        List<MenuItemEntity> items = itemRepository
+                .findByCategoryIdOrderBySortOrderAscNameAsc(categoryId);
+        AdminCategoryResponse before = toCategory(category, items);
         category.deactivate();
-        categoryRepository.saveAndFlush(category);
+        MenuCategoryEntity saved = categoryRepository.saveAndFlush(category);
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "catalog.category",
+                categoryId,
+                before,
+                toCategory(saved, items)
+        );
     }
 
     @Transactional
@@ -139,7 +174,15 @@ class AdminCatalogService {
                 command.active()
         );
 
-        return toItem(itemRepository.saveAndFlush(item));
+        AdminItemResponse created = toItem(itemRepository.saveAndFlush(item));
+        auditTrail.record(
+                AuditAction.CREATE,
+                "catalog.item",
+                created.id(),
+                null,
+                created
+        );
+        return created;
     }
 
     @Transactional
@@ -162,6 +205,7 @@ class AdminCatalogService {
             );
         }
 
+        AdminItemResponse before = toItem(item);
         item.update(
                 command.categoryId(),
                 name,
@@ -172,15 +216,31 @@ class AdminCatalogService {
                 command.active()
         );
 
-        return toItem(itemRepository.saveAndFlush(item));
+        AdminItemResponse after = toItem(itemRepository.saveAndFlush(item));
+        auditTrail.record(
+                activeChangeAction(before.active(), after.active()),
+                "catalog.item",
+                itemId,
+                before,
+                after
+        );
+        return after;
     }
 
     @Transactional
     void deactivateItem(UUID itemId, long version) {
         MenuItemEntity item = requireItem(itemId);
         assertVersion(item.version(), version);
+        AdminItemResponse before = toItem(item);
         item.deactivate();
-        itemRepository.saveAndFlush(item);
+        AdminItemResponse after = toItem(itemRepository.saveAndFlush(item));
+        auditTrail.record(
+                AuditAction.DEACTIVATE,
+                "catalog.item",
+                itemId,
+                before,
+                after
+        );
     }
 
     private MenuCategoryEntity requireCategory(UUID id) {
@@ -203,6 +263,16 @@ class AdminCatalogService {
                     "This catalog record changed after it was loaded. Refresh and try again."
             );
         }
+    }
+
+    private static AuditAction activeChangeAction(boolean before, boolean after) {
+        if (!before && after) {
+            return AuditAction.REACTIVATE;
+        }
+        if (before && !after) {
+            return AuditAction.DEACTIVATE;
+        }
+        return AuditAction.UPDATE;
     }
 
     private static String normalizeSlug(String value) {

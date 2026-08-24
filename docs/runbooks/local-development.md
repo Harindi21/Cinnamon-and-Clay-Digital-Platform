@@ -1,66 +1,114 @@
 # Local development runbook
 
-## Start infrastructure
+The checked-in local defaults intentionally avoid common workstation conflicts:
+
+- PostgreSQL host port `55432` instead of `5432`;
+- Spring Boot `8082` instead of `8080`;
+- Keycloak `8081`;
+- Next.js `3000`;
+- MinIO `9000` / console `9001`.
+
+All values remain overrideable in `.env`.
+
+## First-time environment
 
 ```powershell
 Copy-Item .env.example .env
-docker compose --env-file .env -f infra/compose.yaml up -d
-docker compose --env-file .env -f infra/compose.yaml ps
 ```
 
-## Backend
+Review `.env`; local placeholder secrets must not be reused in real environments.
+
+## Terminal 1 - infrastructure
 
 ```powershell
-Set-Location backend
-$env:DB_URL = "jdbc:postgresql://localhost:5432/cinnamon_clay"
-$env:DB_USER = "cinnamon_clay"
-$env:DB_PASSWORD = "change-me-locally"
-mvn spring-boot:run
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 infra-up
 ```
 
-## Public web
+To include Prometheus and Grafana:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 infra-up -Observability
+```
+
+Check ports/containers:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 status
+```
+
+## Terminal 2 - backend
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 backend
+```
+
+The launcher reads `.env` and exports the Spring datasource/OIDC/media/cache variables for the process, avoiding manual `set DB_*` drift.
+
+Verify:
+
+```powershell
+Invoke-RestMethod http://localhost:8082/actuator/health
+Invoke-RestMethod http://localhost:8082/api/v1/catalog/menu
+```
+
+## Terminal 3 - public web
+
+Install once:
 
 ```powershell
 Set-Location public-web
-npm install
-$env:BACKEND_INTERNAL_URL = "http://localhost:8080"
-npm run dev
+npm ci
+Set-Location ..
 ```
 
-Commit the generated `package-lock.json`.
+Then run:
 
-## Flutter admin
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 web
+```
 
-Generate and configure the Android runner once from a clean working tree:
+Open `http://localhost:3000`.
+
+The launcher passes `BACKEND_INTERNAL_URL=http://127.0.0.1:8082`, so Next.js does not accidentally call a workstation service on port 8080.
+
+## Terminal 4 - Flutter admin
+
+Generate/configure the Android runner once from a clean working tree if it has not yet been committed:
 
 ```powershell
 Set-Location admin-flutter
 powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
+Set-Location ..
 ```
 
-Start an Android emulator/device, then map its loopback ports to the host services:
+Start an emulator/device, then:
 
 ```powershell
-adb reverse tcp:8080 tcp:8080
-adb reverse tcp:8081 tcp:8081
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
 ```
 
-Run the application:
-
-```powershell
-flutter run `
-  --dart-define=API_BASE_URL=http://localhost:8080 `
-  --dart-define=OIDC_ISSUER_URL=http://localhost:8081/realms/cinnamon-clay `
-  --dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile `
-  --dart-define=OIDC_ALLOW_INSECURE=true
-```
+The launcher configures `adb reverse` for the backend and Keycloak, then supplies the native OIDC/API `dart-define` values.
 
 Review and commit the generated `android/` runner instead of regenerating it for every session. See `docs/runbooks/admin-oidc-local.md`.
 
-## Stop
+## Smoke the local stack
+
+After the backend is running, verify infrastructure plus all public API reads. Add `-IncludeWeb` after Next.js starts and `-Observability` when that profile is enabled:
 
 ```powershell
-docker compose --env-file .env -f infra/compose.yaml down
+powershell -ExecutionPolicy Bypass -File tools/smoke-local.ps1 -IncludeWeb
 ```
 
-Do not add `-v` unless you intentionally want to delete the local PostgreSQL volume.
+The smoke script checks backend health, all five public API capabilities, Keycloak discovery, MinIO health and optionally the public web/observability endpoints. It intentionally does not automate administrator credentials or token issuance.
+
+## Stop infrastructure
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 infra-down
+```
+
+Do not use Docker Compose `down -v` unless you intentionally want to delete local PostgreSQL/MinIO data.
+
+## Backups
+
+See `docs/runbooks/database-backup-restore.md` for executable backup, restore and restore-rehearsal commands.

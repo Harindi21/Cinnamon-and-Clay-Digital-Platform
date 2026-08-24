@@ -23,6 +23,8 @@
 - [ ] No secrets or credentials are included
 - [ ] Database migration is safe and forward-only, if applicable
 - [ ] Logging/metrics/runbook impact considered, if applicable
+- [ ] Administrator mutations are audited, or the PR explains why audit does not apply
+- [ ] Public-content changes preserve the documented cache-freshness contract
 
 ## Screenshots
 

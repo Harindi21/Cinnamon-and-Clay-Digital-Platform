@@ -33,3 +33,6 @@ infra/.data/
 coverage/
 reports/
 public-web/next-env.d.ts
+
+# local backup artifacts
+backups/
