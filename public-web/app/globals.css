@@ -8,6 +8,7 @@
 
   --primary: #5c3a21;
   --accent: #c4823b;
+  --accent-strong: #8f521c;
 
   --border: rgba(92, 58, 33, 0.14);
 
@@ -71,8 +72,9 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 4px;
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--primary);
 }
 
 .shell {
@@ -87,7 +89,7 @@ button:focus-visible {
 .sectionKicker,
 .kicker {
   margin-bottom: 12px;
-  color: var(--accent);
+  color: var(--accent-strong);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -214,8 +216,8 @@ button:focus-visible {
 }
 
 .heroActions a:first-child {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
 }
 
 .heroActions a:last-child {
@@ -228,7 +230,7 @@ button:focus-visible {
 }
 
 .heroActions a:first-child:hover {
-  background: #d28c40;
+  background: #9a5b20;
 }
 
 /* About */
@@ -389,7 +391,7 @@ button:focus-visible {
 
 .menuItem strong {
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--accent-strong);
   font-size: 0.96rem;
 }
 
@@ -660,7 +662,7 @@ button:focus-visible {
 }
 
 .reviewStars {
-  color: var(--accent);
+  color: var(--accent-strong);
   font-size: 1.05rem;
   letter-spacing: 0.14em;
 }
@@ -727,7 +729,7 @@ button:focus-visible {
 }
 
 .visitDetails a:hover {
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 .hoursList {
@@ -770,7 +772,7 @@ button:focus-visible {
 }
 
 .socialLinks a:hover {
-  border-color: var(--accent);
+  border-color: var(--accent-strong);
 }
 
 .whatsappLink {
