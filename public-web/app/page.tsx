@@ -117,7 +117,7 @@ const [
                     className="featureCard"
                     key={feature.title}
                   >
-                    <span className="featureIcon">
+                    <span className="featureIcon" aria-hidden="true">
                       {feature.icon}
                     </span>
 
@@ -224,6 +224,7 @@ const [
             >
               <div
                 className="reviewStars"
+                role="img"
                 aria-label={
                   `${review.rating} out of 5 stars`
                 }

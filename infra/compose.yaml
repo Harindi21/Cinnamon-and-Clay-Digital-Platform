@@ -91,6 +91,64 @@ services:
     security_opt:
       - no-new-privileges:true
 
+
+  backend:
+    profiles: ["app"]
+    build:
+      context: ../backend
+    image: ${BACKEND_IMAGE:-cinnamon-clay/backend:local}
+    container_name: cinnamon-clay-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-cinnamon_clay}
+      DB_USER: ${POSTGRES_USER:-cinnamon_clay}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me-locally}
+      OIDC_ISSUER_URI: http://localhost:${KEYCLOAK_PORT:-8081}/realms/cinnamon-clay
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/cinnamon-clay/protocol/openid-connect/certs
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-cinnamon-clay-api}
+      OIDC_RESOURCE_CLIENT_ID: ${OIDC_RESOURCE_CLIENT_ID:-cinnamon-clay-api}
+      MEDIA_S3_ENDPOINT: http://minio:9000
+      MEDIA_S3_REGION: ${MEDIA_S3_REGION:-us-east-1}
+      MEDIA_S3_BUCKET: ${MEDIA_S3_BUCKET:-cafe-media}
+      MEDIA_S3_ACCESS_KEY: ${MINIO_ROOT_USER:-cinnamon_clay}
+      MEDIA_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-change-me-locally}
+      PUBLIC_REVALIDATION_ENABLED: ${PUBLIC_REVALIDATION_ENABLED:-true}
+      PUBLIC_REVALIDATION_URL: http://public-web:3000/api/internal/revalidate
+      PUBLIC_REVALIDATION_SECRET: ${PUBLIC_REVALIDATION_SECRET:-change-me-locally}
+      PUBLIC_REVALIDATION_TIMEOUT: ${PUBLIC_REVALIDATION_TIMEOUT:-PT1S}
+      OTLP_TRACING_ENABLED: ${OTLP_TRACING_ENABLED:-false}
+      OTLP_METRICS_ENABLED: ${OTLP_METRICS_ENABLED:-false}
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-local-container}
+    ports:
+      - "${BACKEND_PORT:-8082}:8080"
+    security_opt:
+      - no-new-privileges:true
+
+  public-web:
+    profiles: ["app"]
+    build:
+      context: ../public-web
+    image: ${PUBLIC_WEB_IMAGE:-cinnamon-clay/public-web:local}
+    container_name: cinnamon-clay-public-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8080
+      PUBLIC_REVALIDATION_SECRET: ${PUBLIC_REVALIDATION_SECRET:-change-me-locally}
+    ports:
+      - "${PUBLIC_WEB_PORT:-3000}:3000"
+    security_opt:
+      - no-new-privileges:true
+
   prometheus:
     image: prom/prometheus:v3.14.0
     container_name: cinnamon-clay-prometheus

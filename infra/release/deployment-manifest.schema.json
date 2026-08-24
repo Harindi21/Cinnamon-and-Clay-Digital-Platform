@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cinnamon-and-clay.example/schemas/deployment-manifest.schema.json",
+  "title": "Cinnamon & Clay deployment manifest",
+  "type": "object",
+  "required": ["schemaVersion", "releaseVersion", "source", "images"],
+  "properties": {
+    "schemaVersion": {"const": "1"},
+    "environment": {"enum": ["staging", "production"]},
+    "releaseVersion": {"type": "string", "minLength": 1},
+    "source": {
+      "type": "object",
+      "required": ["repository", "revision"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      },
+      "additionalProperties": false
+    },
+    "images": {
+      "type": "object",
+      "required": ["backend", "publicWeb"],
+      "properties": {
+        "backend": {"$ref": "#/$defs/image"},
+        "publicWeb": {"$ref": "#/$defs/image"}
+      },
+      "additionalProperties": false
+    },
+    "generatedAt": {"type": "string"},
+    "promotedAt": {"type": "string"}
+  },
+  "$defs": {
+    "image": {
+      "type": "object",
+      "required": ["ref", "digest"],
+      "properties": {
+        "ref": {"type": "string", "pattern": "^ghcr\\.io/"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "sbom": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -112,11 +112,12 @@ export function Gallery({ assets }: GalleryProps) {
 
   return (
     <>
-      <div className="galleryGrid" aria-label="Cafe gallery">
+      <div className="galleryGrid" role="list" aria-label="Cafe gallery">
         {assets.map((asset, index) => (
           <figure
             className={`galleryItem ${galleryVariant(asset, index)}`}
             key={asset.id}
+            role="listitem"
           >
             <button
               className="galleryOpenButton"

@@ -41,10 +41,10 @@ Create/edit/reorder/activate flows use validation and optimistic locking across 
 
 Implemented append-only administrator audit events, request/trace correlation, production structured logging, Prometheus metrics, optional OpenTelemetry export, local Prometheus/Grafana dashboards and alerts, publish-driven Next.js cache invalidation, executable backup/restore/rehearsal tooling and operational runbooks. Provider-managed retention and production telemetry destinations remain deployment concerns.
 
-## PR 09 - delivery
+## PR 09 - delivery - complete for provider-neutral portfolio scope
 
-Build signed/scanned container images, SBOM/provenance, environment promotion, smoke tests and rollback procedure.
+Production container builds are PR-validated. Release tags publish scanned GHCR images, BuildKit provenance/SBOM attestations, CycloneDX SBOM artifacts and keyless Cosign signatures. Release and environment deployment manifests pin immutable digests; GitHub Environments gate provider-neutral promotion and the rollback runbook re-promotes the last known-good digest pair.
 
-## PR 10 - release readiness and documentation
+## PR 10 - release readiness and documentation - in progress
 
-Architecture diagrams, threat model, engineering trade-offs, screenshots, demo video, performance/a11y evidence and a concise case-study README.
+Real-Chromium public E2E and Lighthouse accessibility/performance budgets are now CI gates. Architecture diagrams, threat model and engineering trade-offs exist. Remaining evidence is the committed Android runner/device smoke, one signed promotion rehearsal, final screenshots/demo video and concise case-study/release notes.

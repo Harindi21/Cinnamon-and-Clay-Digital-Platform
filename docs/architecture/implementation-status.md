@@ -17,14 +17,14 @@ This document keeps portfolio claims aligned with code that exists in the reposi
 | Public cache freshness | Complete for portfolio scope | Next.js capability tags plus authenticated best-effort after-commit revalidation. Five-minute fetch TTL remains the failure fallback. |
 | Observability | Complete for portfolio scope | Request IDs, trace/span correlation, Problem Details correlation, Prometheus metrics, optional OpenTelemetry export, ECS production logs, local Prometheus/Grafana profile, dashboard and alert rules. Production collector/destination and alert calibration remain deployment work. |
 | Backup / recovery | Partial-to-strong | Executable backup, destructive restore and isolated restore-rehearsal scripts exist with checksum metadata and schema/table verification. Automated encrypted/off-site retention, PITR and measured production RPO/RTO remain provider work. |
-| Delivery pipeline | Partial | Non-root Dockerfiles, CI/security checks and operational-config validation exist. Image publication, immutable digest promotion, SBOM/provenance, signing, deployment smoke tests and rollback automation remain. |
-| End-to-end quality | Partial | Backend integration and Flutter unit/widget tests exist; the public gallery has keyboard/lightbox accessibility behavior. Browser E2E, admin integration tests, performance budgets and captured accessibility evidence remain. |
+| Delivery pipeline | Complete for provider-neutral portfolio scope | Production container builds are PR-validated; SemVer releases publish GHCR images, BuildKit provenance/SBOM attestations, CycloneDX SBOMs, Trivy gates, keyless Cosign signatures and immutable release manifests. GitHub Environment promotion verifies signatures/digests and emits deployment manifests. A cloud/provider deployment adapter remains environment work. |
+| End-to-end quality | Strong for public experience | Backend integration + Flutter tests remain; CI now runs the built Next.js app in Chromium against a deterministic public API contract, covers gallery keyboard/focus behavior and media headers, and enforces Lighthouse accessibility/performance budgets. Full native-device admin E2E remains. |
 | Portfolio release package | Partial | ADRs, diagrams, threat model, runbooks and operational dashboard exist. Final screenshots, demo video, measured quality evidence, tagged release and case-study summary remain. |
 
 ## Recommended next sequence
 
-1. Commit/review the generated Android runner so the admin application is clone-and-run.
-2. Build the release workflow: immutable image tags, registry publication, SBOM/provenance, signing, environment promotion, smoke tests and rollback.
-3. Add browser/admin E2E tests plus Lighthouse/accessibility/performance evidence.
-4. Rehearse backup/restore and capture real local evidence; later replace local objectives with provider-backed RPO/RTO evidence.
+1. Commit/review the generated Android runner so the admin application is clone-and-run, then add a real emulator/device OIDC smoke flow.
+2. Configure GitHub Environments (`staging`, `production`) and exercise one signed release + promotion rehearsal to capture evidence.
+3. Rehearse backup/restore and capture real local evidence; later replace local objectives with provider-backed RPO/RTO evidence.
+4. Add the chosen cloud/provider deployment adapter and production secrets/telemetry destinations.
 5. Produce the portfolio release: screenshots, demo video, tagged release and concise engineering case study.
