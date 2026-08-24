@@ -8,5 +8,6 @@ public enum AuditAction {
     PUBLISH,
     HIDE,
     REPLACE,
+    REORDER,
     CLEANUP
 }

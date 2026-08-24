@@ -76,9 +76,7 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
                 subtitle: 'Ordered copy displayed in the public About section.',
                 actionLabel: 'Add',
                 actionIcon: Icons.add,
-                onAction: _mutating
-                    ? null
-                    : () => _createParagraph(context),
+                onAction: _mutating ? null : () => _createParagraph(context),
               ),
               ...snapshot.paragraphs.map(
                 (paragraph) => ManagedSettingsCard(
@@ -155,9 +153,7 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
                 subtitle: 'HTTPS links exposed in the public Visit section.',
                 actionLabel: 'Add',
                 actionIcon: Icons.add,
-                onAction: _mutating
-                    ? null
-                    : () => _createSocialLink(context),
+                onAction: _mutating ? null : () => _createSocialLink(context),
               ),
               ...snapshot.socialLinks.map(
                 (link) => ManagedSettingsCard(
@@ -195,14 +191,16 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Brand and public copy updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateSite(
-        current: site,
-        brandName: draft.brandName,
-        tagline: draft.tagline,
-        heroNote: draft.heroNote,
-        menuNote: draft.menuNote,
-        aboutTitle: draft.aboutTitle,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateSite(
+            current: site,
+            brandName: draft.brandName,
+            tagline: draft.tagline,
+            heroNote: draft.heroNote,
+            menuNote: draft.menuNote,
+            aboutTitle: draft.aboutTitle,
+          ),
     );
   }
 
@@ -216,11 +214,13 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'About paragraph created.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).createParagraph(
-        body: draft.body,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .createParagraph(
+            body: draft.body,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -237,12 +237,14 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'About paragraph updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateParagraph(
-        current: paragraph,
-        body: draft.body,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateParagraph(
+            current: paragraph,
+            body: draft.body,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -253,7 +255,8 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     if (!await _confirmHide(
       context,
       title: 'Hide this paragraph?',
-      message: 'It will stop appearing on the public website but can be '
+      message:
+          'It will stop appearing on the public website but can be '
           'reactivated by editing it later.',
     )) {
       return;
@@ -276,13 +279,15 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Feature created.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).createFeature(
-        icon: draft.icon,
-        title: draft.title,
-        text: draft.text,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .createFeature(
+            icon: draft.icon,
+            title: draft.title,
+            text: draft.text,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -299,14 +304,16 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Feature updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateFeature(
-        current: feature,
-        icon: draft.icon,
-        title: draft.title,
-        text: draft.text,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateFeature(
+            current: feature,
+            icon: draft.icon,
+            title: draft.title,
+            text: draft.text,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -323,9 +330,8 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Feature hidden.',
-      operation: () => ref
-          .read(siteSettingsRepositoryProvider)
-          .deactivateFeature(feature),
+      operation: () =>
+          ref.read(siteSettingsRepositoryProvider).deactivateFeature(feature),
     );
   }
 
@@ -342,16 +348,18 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Contact settings updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateContact(
-        current: contact,
-        address: draft.address,
-        phone: draft.phone,
-        email: draft.email,
-        mapEmbedUrl: draft.mapEmbedUrl,
-        whatsappEnabled: draft.whatsappEnabled,
-        whatsappNumber: draft.whatsappNumber,
-        whatsappPrefill: draft.whatsappPrefill,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateContact(
+            current: contact,
+            address: draft.address,
+            phone: draft.phone,
+            email: draft.email,
+            mapEmbedUrl: draft.mapEmbedUrl,
+            whatsappEnabled: draft.whatsappEnabled,
+            whatsappNumber: draft.whatsappNumber,
+            whatsappPrefill: draft.whatsappPrefill,
+          ),
     );
   }
 
@@ -365,19 +373,18 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Opening hour created.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).createHour(
-        dayLabel: draft.dayLabel,
-        timeLabel: draft.timeLabel,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .createHour(
+            dayLabel: draft.dayLabel,
+            timeLabel: draft.timeLabel,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
-  Future<void> _editHour(
-    BuildContext context,
-    AdminOpeningHour hour,
-  ) async {
+  Future<void> _editHour(BuildContext context, AdminOpeningHour hour) async {
     final draft = await showDialog<OpeningHourDraft>(
       context: context,
       builder: (context) => OpeningHourEditorDialog(hour: hour),
@@ -387,13 +394,15 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Opening hour updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateHour(
-        current: hour,
-        dayLabel: draft.dayLabel,
-        timeLabel: draft.timeLabel,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateHour(
+            current: hour,
+            dayLabel: draft.dayLabel,
+            timeLabel: draft.timeLabel,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -410,9 +419,8 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Opening hour hidden.',
-      operation: () => ref
-          .read(siteSettingsRepositoryProvider)
-          .deactivateHour(hour),
+      operation: () =>
+          ref.read(siteSettingsRepositoryProvider).deactivateHour(hour),
     );
   }
 
@@ -426,12 +434,14 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Social link created.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).createSocialLink(
-        platform: draft.platform,
-        url: draft.url,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .createSocialLink(
+            platform: draft.platform,
+            url: draft.url,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -448,13 +458,15 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Social link updated.',
-      operation: () => ref.read(siteSettingsRepositoryProvider).updateSocialLink(
-        current: link,
-        platform: draft.platform,
-        url: draft.url,
-        sortOrder: draft.sortOrder,
-        active: draft.active,
-      ),
+      operation: () => ref
+          .read(siteSettingsRepositoryProvider)
+          .updateSocialLink(
+            current: link,
+            platform: draft.platform,
+            url: draft.url,
+            sortOrder: draft.sortOrder,
+            active: draft.active,
+          ),
     );
   }
 
@@ -471,9 +483,8 @@ class _SiteSettingsPageState extends ConsumerState<SiteSettingsPage> {
     }
     await _runMutation(
       successMessage: 'Social link hidden.',
-      operation: () => ref
-          .read(siteSettingsRepositoryProvider)
-          .deactivateSocialLink(link),
+      operation: () =>
+          ref.read(siteSettingsRepositoryProvider).deactivateSocialLink(link),
     );
   }
 

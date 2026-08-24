@@ -26,7 +26,9 @@ class SiteSettingsRepository {
       final contact = _requireBody(responses[1]);
 
       return SiteSettingsSnapshot(
-        site: AdminSiteProfile.fromJson(content['site'] as Map<String, dynamic>),
+        site: AdminSiteProfile.fromJson(
+          content['site'] as Map<String, dynamic>,
+        ),
         paragraphs: _list(content, 'paragraphs', AdminAboutParagraph.fromJson),
         features: _list(content, 'features', AdminSiteFeature.fromJson),
         contact: AdminContactProfile.fromJson(

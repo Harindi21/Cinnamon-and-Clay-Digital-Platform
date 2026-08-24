@@ -53,6 +53,9 @@ class AdminMediaService {
             MultipartFile multipartFile,
             MediaPurpose purpose,
             String altText,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             int sortOrder,
             boolean active
     ) {
@@ -71,7 +74,10 @@ class AdminMediaService {
             return metadataManager.create(
                     storedFile,
                     purpose,
-                    normalizeAltText(altText),
+                    normalizeText(altText),
+                    normalizeText(caption),
+                    focalXPercent,
+                    focalYPercent,
                     sortOrder,
                     active
             );
@@ -86,12 +92,21 @@ class AdminMediaService {
                 id,
                 new UpdateMetadataCommand(
                         command.purpose(),
-                        normalizeAltText(command.altText()),
+                        normalizeText(command.altText()),
+                        command.caption() == null
+                                ? null
+                                : normalizeText(command.caption()),
+                        command.focalXPercent(),
+                        command.focalYPercent(),
                         command.sortOrder(),
                         command.active(),
                         command.version()
                 )
         );
+    }
+
+    GalleryOrderResponse reorderGallery(List<GalleryOrderItem> items) {
+        return new GalleryOrderResponse(metadataManager.reorderGallery(items));
     }
 
     AssetResponse replaceFile(
@@ -204,7 +219,7 @@ class AdminMediaService {
         }
     }
 
-    private static String normalizeAltText(String value) {
+    private static String normalizeText(String value) {
         return value == null ? "" : value.trim();
     }
 
@@ -231,6 +246,9 @@ class AdminMediaService {
                 entity.sizeBytes(),
                 entity.purpose(),
                 entity.altText(),
+                entity.caption(),
+                entity.focalXPercent(),
+                entity.focalYPercent(),
                 entity.sortOrder(),
                 entity.isActive(),
                 entity.widthPixels(),
@@ -253,6 +271,9 @@ class AdminMediaService {
             long sizeBytes,
             MediaPurpose purpose,
             String altText,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             int sortOrder,
             boolean active,
             Integer widthPixels,
@@ -268,10 +289,19 @@ class AdminMediaService {
     record UpdateMetadataCommand(
             MediaPurpose purpose,
             String altText,
+            String caption,
+            Integer focalXPercent,
+            Integer focalYPercent,
             int sortOrder,
             boolean active,
             long version
     ) {
+    }
+
+    record GalleryOrderItem(UUID id, long version) {
+    }
+
+    record GalleryOrderResponse(List<AssetResponse> assets) {
     }
 
     record OrphanReport(

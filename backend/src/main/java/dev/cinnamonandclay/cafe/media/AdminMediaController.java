@@ -1,6 +1,7 @@
 package dev.cinnamonandclay.cafe.media;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.CacheControl;
@@ -47,6 +48,9 @@ class AdminMediaController {
             @RequestPart("file") MultipartFile file,
             @RequestParam @NotNull MediaPurpose purpose,
             @RequestParam(defaultValue = "") @Size(max = 300) String altText,
+            @RequestParam(defaultValue = "") @Size(max = 500) String caption,
+            @RequestParam(defaultValue = "50") @Min(0) @Max(100) int focalXPercent,
+            @RequestParam(defaultValue = "50") @Min(0) @Max(100) int focalYPercent,
             @RequestParam(defaultValue = "0") @Min(0) @Max(100_000) int sortOrder,
             @RequestParam(defaultValue = "true") boolean active
     ) {
@@ -54,6 +58,9 @@ class AdminMediaController {
                 file,
                 purpose,
                 altText,
+                caption,
+                focalXPercent,
+                focalYPercent,
                 sortOrder,
                 active
         );
@@ -72,10 +79,27 @@ class AdminMediaController {
                 new AdminMediaService.UpdateMetadataCommand(
                         request.purpose(),
                         request.altText(),
+                        request.caption(),
+                        request.focalXPercent(),
+                        request.focalYPercent(),
                         request.sortOrder(),
                         request.active(),
                         request.version()
                 )
+        );
+    }
+
+    @PutMapping("/gallery/order")
+    AdminMediaService.GalleryOrderResponse reorderGallery(
+            @Valid @RequestBody GalleryOrderRequest request
+    ) {
+        return service.reorderGallery(
+                request.items().stream()
+                        .map(item -> new AdminMediaService.GalleryOrderItem(
+                                item.id(),
+                                item.version()
+                        ))
+                        .toList()
         );
     }
 
@@ -136,8 +160,23 @@ class AdminMediaController {
     record MetadataUpdateRequest(
             @NotNull MediaPurpose purpose,
             @Size(max = 300) String altText,
+            @Size(max = 500) String caption,
+            @Min(0) @Max(100) Integer focalXPercent,
+            @Min(0) @Max(100) Integer focalYPercent,
             @Min(0) @Max(100_000) int sortOrder,
             boolean active,
+            @NotNull @Min(0) Long version
+    ) {
+    }
+
+    record GalleryOrderRequest(
+            @NotNull @Size(min = 1, max = 100)
+            List<@Valid GalleryOrderItemRequest> items
+    ) {
+    }
+
+    record GalleryOrderItemRequest(
+            @NotNull UUID id,
             @NotNull @Min(0) Long version
     ) {
     }

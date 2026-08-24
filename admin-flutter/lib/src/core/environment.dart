@@ -1,6 +1,6 @@
 const String apiBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://localhost:8080',
+  defaultValue: 'http://localhost:8082',
 );
 
 const String oidcIssuerUrl = String.fromEnvironment(

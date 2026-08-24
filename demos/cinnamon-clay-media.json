@@ -1,0 +1,93 @@
+{
+  "sourceNote": "Remote demo assets referenced by the original static Cinnamon & Clay prototype. Download for local demonstration only; review third-party licensing before redistribution.",
+  "assets": [
+    {
+      "fileName": "hero-cafe.jpg",
+      "purpose": "HERO",
+      "url": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1800&q=85&auto=format&fit=crop",
+      "altText": "Warm cafe interior with tables and natural light",
+      "caption": "A warm corner for slow coffee and good company.",
+      "focalXPercent": 50,
+      "focalYPercent": 48,
+      "sortOrder": 10,
+      "active": true
+    },
+    {
+      "fileName": "about-cafe.jpg",
+      "purpose": "ABOUT",
+      "url": "https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Cafe counter and seating area",
+      "caption": "Built around coffee, bakes and unhurried conversations.",
+      "focalXPercent": 50,
+      "focalYPercent": 50,
+      "sortOrder": 10,
+      "active": true
+    },
+    {
+      "fileName": "gallery-coffee-cup.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Cup of freshly brewed coffee on a cafe table",
+      "caption": "Coffee made for slow mornings.",
+      "focalXPercent": 50,
+      "focalYPercent": 52,
+      "sortOrder": 10,
+      "active": true
+    },
+    {
+      "fileName": "gallery-pour-over.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Coffee being prepared by hand",
+      "caption": "Care in every pour.",
+      "focalXPercent": 52,
+      "focalYPercent": 48,
+      "sortOrder": 20,
+      "active": true
+    },
+    {
+      "fileName": "gallery-table.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Cafe table prepared for food and drinks",
+      "caption": "A table worth lingering around.",
+      "focalXPercent": 50,
+      "focalYPercent": 50,
+      "sortOrder": 30,
+      "active": true
+    },
+    {
+      "fileName": "gallery-beans.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Roasted coffee beans ready for brewing",
+      "caption": "Fresh beans, carefully brewed.",
+      "focalXPercent": 50,
+      "focalYPercent": 50,
+      "sortOrder": 40,
+      "active": true
+    },
+    {
+      "fileName": "gallery-latte.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Milk coffee served in a ceramic cup",
+      "caption": "Comfort in a cup.",
+      "focalXPercent": 50,
+      "focalYPercent": 55,
+      "sortOrder": 50,
+      "active": true
+    },
+    {
+      "fileName": "gallery-brunch.jpg",
+      "purpose": "GALLERY",
+      "url": "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=1200&q=85&auto=format&fit=crop",
+      "altText": "Brunch dishes arranged on a shared table",
+      "caption": "Something warm to go with your coffee.",
+      "focalXPercent": 50,
+      "focalYPercent": 52,
+      "sortOrder": 60,
+      "active": true
+    }
+  ]
+}

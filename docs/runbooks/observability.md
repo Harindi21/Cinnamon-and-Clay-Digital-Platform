@@ -34,7 +34,7 @@ When investigating an incident, start with the request ID because it is availabl
 
 ## Tracing
 
-Tracing instrumentation is included, while OTLP export is disabled by default.
+Tracing instrumentation is included, while OTLP export is disabled by default. Prometheus is the local metrics path; OTLP metrics export is separately opt-in with `OTLP_METRICS_ENABLED=true`, which keeps backend tests and normal local development from trying to publish to an absent collector.
 
 Configure the production environment/collector using Spring Boot OTLP/OpenTelemetry properties and enable export. For example, an OTLP/HTTP collector can be supplied through the standard OpenTelemetry environment mapping:
 

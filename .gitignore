@@ -13,6 +13,7 @@ Thumbs.db
 
 # Node / Next.js
 node_modules/
+.next/
 public-web/.next/
 public-web/out/
 public-web/coverage/
@@ -29,6 +30,7 @@ admin-flutter/.flutter-plugins
 admin-flutter/.flutter-plugins-dependencies
 
 # local data
+.local/
 infra/.data/
 coverage/
 reports/

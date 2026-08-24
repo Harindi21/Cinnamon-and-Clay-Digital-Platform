@@ -105,6 +105,9 @@ erDiagram
         bigint size_bytes
         varchar purpose
         varchar alt_text
+        varchar caption
+        int focal_x_percent
+        int focal_y_percent
         int sort_order
         boolean active
         int width_pixels

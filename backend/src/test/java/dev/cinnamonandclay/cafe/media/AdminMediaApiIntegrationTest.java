@@ -118,6 +118,9 @@ class AdminMediaApiIntegrationTest {
                                 .file(file)
                                 .param("purpose", "HERO")
                                 .param("altText", "Cafe interior")
+                                .param("caption", "Morning light in the cafe")
+                                .param("focalXPercent", "35")
+                                .param("focalYPercent", "60")
                                 .param("sortOrder", "10")
                                 .param("active", "true")
                                 .with(editorJwt())
@@ -127,6 +130,9 @@ class AdminMediaApiIntegrationTest {
                 .andExpect(jsonPath("$.originalFilename").value("hero.png"))
                 .andExpect(jsonPath("$.widthPixels").value(40))
                 .andExpect(jsonPath("$.heightPixels").value(30))
+                .andExpect(jsonPath("$.caption").value("Morning light in the cafe"))
+                .andExpect(jsonPath("$.focalXPercent").value(35))
+                .andExpect(jsonPath("$.focalYPercent").value(60))
                 .andExpect(jsonPath("$.checksumSha256").value(matchesPattern("[0-9a-f]{64}")))
                 .andReturn();
 
@@ -142,6 +148,9 @@ class AdminMediaApiIntegrationTest {
                 .andExpect(jsonPath("$.hero.id").value(id))
                 .andExpect(jsonPath("$.hero.width").value(40))
                 .andExpect(jsonPath("$.hero.height").value(30))
+                .andExpect(jsonPath("$.hero.caption").value("Morning light in the cafe"))
+                .andExpect(jsonPath("$.hero.focalXPercent").value(35))
+                .andExpect(jsonPath("$.hero.focalYPercent").value(60))
                 .andExpect(jsonPath("$.hero.version").isNumber());
 
         mockMvc.perform(get("/api/v1/media/{id}/content", id))
@@ -215,6 +224,48 @@ class AdminMediaApiIntegrationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.type")
                         .value("urn:cinnamon-clay:problem:conflict"));
+    }
+
+    @Test
+    void legacyMetadataUpdatePreservesNewEditorialFieldsWhenTheyAreOmitted() throws Exception {
+        MvcResult created = mockMvc.perform(
+                        multipart("/api/v1/admin/media")
+                                .file(png("gallery.png", 32, 24))
+                                .param("purpose", "GALLERY")
+                                .param("altText", "Original alt")
+                                .param("caption", "Keep this caption")
+                                .param("focalXPercent", "28")
+                                .param("focalYPercent", "74")
+                                .param("sortOrder", "10")
+                                .param("active", "true")
+                                .with(editorJwt())
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String body = created.getResponse().getContentAsString();
+        String id = JsonPath.read(body, "$.id");
+        long version = JsonPath.<Number>read(body, "$.version").longValue();
+
+        mockMvc.perform(
+                        put("/api/v1/admin/media/{id}", id)
+                                .with(editorJwt())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "purpose": "GALLERY",
+                                          "altText": "Updated alt",
+                                          "sortOrder": 20,
+                                          "active": true,
+                                          "version": %d
+                                        }
+                                        """.formatted(version))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.altText").value("Updated alt"))
+                .andExpect(jsonPath("$.caption").value("Keep this caption"))
+                .andExpect(jsonPath("$.focalXPercent").value(28))
+                .andExpect(jsonPath("$.focalYPercent").value(74));
     }
 
     @Test
@@ -313,6 +364,138 @@ class AdminMediaApiIntegrationTest {
                 .andExpect(status().isConflict());
 
         assertThat(storage.keys()).containsExactly(committedKey);
+    }
+
+    @Test
+    void editorCanAtomicallyReorderTheActiveGallery() throws Exception {
+        AssetVersion first = upload("first.png", "GALLERY", true, 20);
+        AssetVersion second = upload("second.png", "GALLERY", true, 10);
+
+        mockMvc.perform(
+                        put("/api/v1/admin/media/gallery/order")
+                                .with(editorJwt())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "items": [
+                                            {"id": "%s", "version": %d},
+                                            {"id": "%s", "version": %d}
+                                          ]
+                                        }
+                                        """.formatted(
+                                                first.id(),
+                                                first.version(),
+                                                second.id(),
+                                                second.version()
+                                        ))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.assets[0].id").value(first.id()))
+                .andExpect(jsonPath("$.assets[0].sortOrder").value(10))
+                .andExpect(jsonPath("$.assets[1].id").value(second.id()))
+                .andExpect(jsonPath("$.assets[1].sortOrder").value(20));
+
+        mockMvc.perform(get("/api/v1/media"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.gallery[0].id").value(first.id()))
+                .andExpect(jsonPath("$.gallery[1].id").value(second.id()));
+
+        Integer auditCount = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM admin_audit_event
+                WHERE action = 'REORDER'
+                  AND resource_type = 'media.gallery-order'
+                """,
+                Integer.class
+        );
+        assertThat(auditCount).isOne();
+    }
+
+    @Test
+    void galleryReorderRejectsIncompleteAssetSet() throws Exception {
+        AssetVersion first = upload("first.png", "GALLERY", true, 10);
+        upload("second.png", "GALLERY", true, 20);
+
+        mockMvc.perform(
+                        put("/api/v1/admin/media/gallery/order")
+                                .with(editorJwt())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "items": [
+                                            {"id": "%s", "version": %d}
+                                          ]
+                                        }
+                                        """.formatted(first.id(), first.version()))
+                )
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type")
+                        .value("urn:cinnamon-clay:problem:conflict"));
+    }
+
+    @Test
+    void galleryReorderRejectsStaleVersions() throws Exception {
+        AssetVersion first = upload("first.png", "GALLERY", true, 10);
+        AssetVersion second = upload("second.png", "GALLERY", true, 20);
+
+        mockMvc.perform(
+                        put("/api/v1/admin/media/{id}", first.id())
+                                .with(editorJwt())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "purpose": "GALLERY",
+                                          "altText": "changed",
+                                          "caption": "",
+                                          "focalXPercent": 50,
+                                          "focalYPercent": 50,
+                                          "sortOrder": 10,
+                                          "active": true,
+                                          "version": %d
+                                        }
+                                        """.formatted(first.version()))
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        put("/api/v1/admin/media/gallery/order")
+                                .with(editorJwt())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                          "items": [
+                                            {"id": "%s", "version": %d},
+                                            {"id": "%s", "version": %d}
+                                          ]
+                                        }
+                                        """.formatted(
+                                                second.id(),
+                                                second.version(),
+                                                first.id(),
+                                                first.version()
+                                        ))
+                )
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type")
+                        .value("urn:cinnamon-clay:problem:conflict"));
+    }
+
+    @Test
+    void focalPointPercentagesAreValidatedAtTheApiBoundary() throws Exception {
+        mockMvc.perform(
+                        multipart("/api/v1/admin/media")
+                                .file(png("gallery.png", 32, 24))
+                                .param("purpose", "GALLERY")
+                                .param("focalXPercent", "101")
+                                .param("focalYPercent", "50")
+                                .with(editorJwt())
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type")
+                        .value("urn:cinnamon-clay:problem:validation"));
+
+        assertThat(storage.keys()).isEmpty();
     }
 
     @Test

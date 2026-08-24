@@ -72,6 +72,9 @@ class MediaService {
                 entity.id().toString(),
                 "/api/v1/media/" + entity.id() + "/content",
                 entity.altText(),
+                entity.caption(),
+                entity.focalXPercent(),
+                entity.focalYPercent(),
                 entity.widthPixels(),
                 entity.heightPixels(),
                 entity.version()
@@ -89,6 +92,9 @@ class MediaService {
             String id,
             String url,
             String alt,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             Integer width,
             Integer height,
             long version

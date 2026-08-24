@@ -81,39 +81,38 @@ void main() {
     expect(find.text('No reviews yet.'), findsOneWidget);
   });
 
-  testWidgets(
-    'editor does not see administrator audit destination',
-    (tester) async {
-      const identity = AdminIdentity(
-        subject: 'editor-1',
-        username: 'local.editor',
-        email: 'local.editor@cinnamonandclay.test',
-        roles: <String>['editor'],
-      );
+  testWidgets('editor does not see administrator audit destination', (
+    tester,
+  ) async {
+    const identity = AdminIdentity(
+      subject: 'editor-1',
+      username: 'local.editor',
+      email: 'local.editor@cinnamonandclay.test',
+      roles: <String>['editor'],
+    );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authRepositoryProvider.overrideWithValue(
-              _FakeAuthRepository(const AuthState.authenticated(identity)),
-            ),
-            catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
-            reviewsProvider.overrideWith((ref) async => const <AdminReview>[]),
-            mediaProvider.overrideWith(
-              (ref) async => const MediaSnapshot(<AdminMediaAsset>[]),
-            ),
-            siteSettingsProvider.overrideWith(
-              (ref) async => _siteSettingsFixture,
-            ),
-          ],
-          child: const CinnamonClayAdminApp(),
-        ),
-      );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(
+            _FakeAuthRepository(const AuthState.authenticated(identity)),
+          ),
+          catalogProvider.overrideWith((ref) async => const <MenuCategory>[]),
+          reviewsProvider.overrideWith((ref) async => const <AdminReview>[]),
+          mediaProvider.overrideWith(
+            (ref) async => const MediaSnapshot(<AdminMediaAsset>[]),
+          ),
+          siteSettingsProvider.overrideWith(
+            (ref) async => _siteSettingsFixture,
+          ),
+        ],
+        child: const CinnamonClayAdminApp(),
+      ),
+    );
 
-      await tester.pumpAndSettle();
-      expect(find.text('Audit'), findsNothing);
-    },
-  );
+    await tester.pumpAndSettle();
+    expect(find.text('Audit'), findsNothing);
+  });
 }
 
 class _FakeAuthRepository implements AuthRepository {

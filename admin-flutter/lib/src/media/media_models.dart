@@ -26,6 +26,9 @@ class AdminMediaAsset {
     required this.sizeBytes,
     required this.purpose,
     required this.altText,
+    required this.caption,
+    required this.focalXPercent,
+    required this.focalYPercent,
     required this.sortOrder,
     required this.active,
     required this.widthPixels,
@@ -45,6 +48,9 @@ class AdminMediaAsset {
       sizeBytes: (json['sizeBytes'] as num?)?.toInt() ?? 0,
       purpose: MediaPurpose.fromApi(json['purpose'] as String? ?? 'GALLERY'),
       altText: json['altText'] as String? ?? '',
+      caption: json['caption'] as String? ?? '',
+      focalXPercent: (json['focalXPercent'] as num?)?.toInt() ?? 50,
+      focalYPercent: (json['focalYPercent'] as num?)?.toInt() ?? 50,
       sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
       active: json['active'] as bool? ?? false,
       widthPixels: (json['widthPixels'] as num?)?.toInt(),
@@ -63,6 +69,9 @@ class AdminMediaAsset {
   final int sizeBytes;
   final MediaPurpose purpose;
   final String altText;
+  final String caption;
+  final int focalXPercent;
+  final int focalYPercent;
   final int sortOrder;
   final bool active;
   final int? widthPixels;
@@ -91,6 +100,8 @@ class AdminMediaAsset {
     }
     return '$sizeBytes B';
   }
+
+  String get focalPointLabel => '$focalXPercent% x · $focalYPercent% y';
 }
 
 class MediaSnapshot {
@@ -103,6 +114,14 @@ class MediaSnapshot {
         .where((asset) => asset.purpose == purpose)
         .toList(growable: false);
   }
+
+  List<AdminMediaAsset> get activeGallery => assets
+      .where((asset) => asset.purpose == MediaPurpose.gallery && asset.active)
+      .toList(growable: false);
+
+  List<AdminMediaAsset> get hiddenGallery => assets
+      .where((asset) => asset.purpose == MediaPurpose.gallery && !asset.active)
+      .toList(growable: false);
 }
 
 class MediaMutationException implements Exception {
@@ -124,12 +143,18 @@ class MediaDraft {
   const MediaDraft({
     required this.purpose,
     required this.altText,
+    required this.caption,
+    required this.focalXPercent,
+    required this.focalYPercent,
     required this.sortOrder,
     required this.active,
   });
 
   final MediaPurpose purpose;
   final String altText;
+  final String caption;
+  final int focalXPercent;
+  final int focalYPercent;
   final int sortOrder;
   final bool active;
 }

@@ -46,7 +46,8 @@ The repository is deliberately organized around **end-to-end product slices plus
 
 - database-backed menu and pricing;
 - persisted brand/about/contact/opening-hours/social/WhatsApp content;
-- managed Hero/About/Gallery media;
+- managed Hero/About/Gallery media with editorial captions and crop focal points;
+- responsive curated gallery with keyboard-accessible fullscreen viewing;
 - published reviews only;
 - responsive Next.js presentation with explicit error handling;
 - capability-tagged server cache with a five-minute safety TTL;
@@ -60,6 +61,7 @@ The repository is deliberately organized around **end-to-end product slices plus
 - site/content/contact/opening-hour/social management;
 - review create/edit/publish/hide lifecycle;
 - media upload/edit/replace/hide/reactivate and administrator orphan cleanup;
+- gallery batch selection plus atomic drag-to-reorder publishing;
 - resource-level optimistic concurrency with `409` conflict handling;
 - administrator-only searchable audit trail with before/after details.
 
@@ -76,7 +78,7 @@ Media binaries live in S3-compatible object storage while PostgreSQL stores meta
 - compensates failed cross-store writes and provides aged orphan reconciliation;
 - enforces single active Hero/About placements in application and database constraints.
 
-See `docs/adrs/0011-harden-admin-media-lifecycle.md`.
+See `docs/adrs/0011-harden-admin-media-lifecycle.md` and `docs/adrs/0015-model-editorial-gallery-metadata-and-order.md`.
 
 ### Auditability and operations
 
@@ -201,7 +203,7 @@ powershell -ExecutionPolicy Bypass -File tools/dev.ps1 web
 
 Open `http://localhost:3000`.
 
-The launcher points Next.js to the configured backend port, so developers do not need to manually synchronize terminal-only `DB_*` / backend URL variables.
+The launcher points Next.js to the configured backend port, so developers do not need to manually synchronize terminal-only `DB_*` / backend URL variables. Turbopack is explicitly scoped to `public-web`, and root-level `.next/` artifacts are ignored so local development does not pollute Git status.
 
 ### 5. Start the Flutter admin
 
@@ -222,6 +224,16 @@ powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
 The launcher configures ADB reverse mappings and the local API/OIDC `dart-define` values.
 
 See `docs/runbooks/local-development.md` and `docs/runbooks/admin-oidc-local.md`.
+
+### 6. Optional: restore the original demo photography
+
+The original static prototype referenced remote Unsplash images. They are intentionally not vendored into Git. Download them into the ignored `.local/demo-media` workspace with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/prepare-demo-media.ps1
+```
+
+Then use **Media → Gallery → Upload batch** for the six gallery files and upload the Hero/About files into their singleton placements. For a scripted local bootstrap, the same tool can upload through the authenticated media API when given an administrator access token. See `docs/runbooks/admin-media-management.md`.
 
 ## Local observability
 

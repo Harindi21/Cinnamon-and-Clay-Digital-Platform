@@ -14,9 +14,13 @@ final mediaProvider = FutureProvider<MediaSnapshot>((ref) async {
   return ref.watch(mediaRepositoryProvider).fetch();
 });
 
-final mediaContentProvider = FutureProvider.family<Uint8List, ({String id, int version})>((ref, key) async {
-  return ref.watch(mediaRepositoryProvider).fetchContent(key.id);
-});
+final mediaContentProvider =
+    FutureProvider.family<Uint8List, ({String id, int version})>((
+      ref,
+      key,
+    ) async {
+      return ref.watch(mediaRepositoryProvider).fetchContent(key.id);
+    });
 
 class MediaRepository {
   MediaRepository(this._dio);
@@ -64,6 +68,9 @@ class MediaRepository {
         'file': MultipartFile.fromBytes(bytes, filename: file.name),
         'purpose': draft.purpose.apiValue,
         'altText': draft.altText,
+        'caption': draft.caption,
+        'focalXPercent': draft.focalXPercent.toString(),
+        'focalYPercent': draft.focalYPercent.toString(),
         'sortOrder': draft.sortOrder.toString(),
         'active': draft.active.toString(),
       });
@@ -87,6 +94,9 @@ class MediaRepository {
         data: <String, dynamic>{
           'purpose': draft.purpose.apiValue,
           'altText': draft.altText,
+          'caption': draft.caption,
+          'focalXPercent': draft.focalXPercent,
+          'focalYPercent': draft.focalYPercent,
           'sortOrder': draft.sortOrder,
           'active': draft.active,
           'version': current.version,
@@ -114,6 +124,31 @@ class MediaRepository {
         onSendProgress: onSendProgress,
       );
       return AdminMediaAsset.fromJson(_requireBody(response));
+    });
+  }
+
+  Future<List<AdminMediaAsset>> reorderGallery(
+    List<AdminMediaAsset> orderedAssets,
+  ) async {
+    return _guard(() async {
+      final response = await _dio.put<Map<String, dynamic>>(
+        '/api/v1/admin/media/gallery/order',
+        data: <String, dynamic>{
+          'items': orderedAssets
+              .map(
+                (asset) => <String, dynamic>{
+                  'id': asset.id,
+                  'version': asset.version,
+                },
+              )
+              .toList(growable: false),
+        },
+      );
+      final body = _requireBody(response);
+      return (body['assets'] as List<dynamic>? ?? const <dynamic>[])
+          .whereType<Map<String, dynamic>>()
+          .map(AdminMediaAsset.fromJson)
+          .toList(growable: false);
     });
   }
 

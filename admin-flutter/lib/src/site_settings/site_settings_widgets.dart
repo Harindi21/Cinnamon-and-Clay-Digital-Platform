@@ -59,7 +59,10 @@ class SiteProfileCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(site.brandName, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              site.brandName,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(site.tagline),
             const SizedBox(height: 8),
@@ -69,7 +72,10 @@ class SiteProfileCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text('About title: ${site.aboutTitle}'),
             const SizedBox(height: 10),
-            Text('v${site.version}', style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'v${site.version}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       ),
@@ -147,7 +153,10 @@ class ManagedSettingsCard extends StatelessWidget {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 ),
                 SettingsStatusChip(active: active),
               ],
@@ -191,7 +200,11 @@ class SettingsStatusChip extends StatelessWidget {
 }
 
 class SiteSettingsError extends StatelessWidget {
-  const SiteSettingsError({required this.error, required this.onRetry, super.key});
+  const SiteSettingsError({
+    required this.error,
+    required this.onRetry,
+    super.key,
+  });
 
   final Object error;
   final VoidCallback onRetry;

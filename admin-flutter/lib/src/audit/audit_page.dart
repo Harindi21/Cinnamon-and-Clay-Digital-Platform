@@ -22,6 +22,7 @@ class _AuditPageState extends ConsumerState<AuditPage> {
     'PUBLISH',
     'HIDE',
     'REPLACE',
+    'REORDER',
     'CLEANUP',
   ];
 
@@ -69,23 +70,23 @@ class _AuditPageState extends ConsumerState<AuditPage> {
     });
 
     try {
-      final page = await ref.read(auditRepositoryProvider).find(
-        actor: _actorController.text,
-        action: _action,
-        resourceType: _resourceController.text,
-        resourceId: _resourceIdController.text,
-        requestId: _requestIdController.text,
-        traceId: _traceIdController.text,
-        cursor: reset ? null : _nextCursor,
-      );
+      final page = await ref
+          .read(auditRepositoryProvider)
+          .find(
+            actor: _actorController.text,
+            action: _action,
+            resourceType: _resourceController.text,
+            resourceId: _resourceIdController.text,
+            requestId: _requestIdController.text,
+            traceId: _traceIdController.text,
+            cursor: reset ? null : _nextCursor,
+          );
 
       if (!mounted) {
         return;
       }
       setState(() {
-        _events = reset
-            ? page.items
-            : <AuditEvent>[..._events, ...page.items];
+        _events = reset ? page.items : <AuditEvent>[..._events, ...page.items];
         _nextCursor = page.nextCursor;
         _error = null;
       });
@@ -241,6 +242,7 @@ class _AuditPageState extends ConsumerState<AuditPage> {
       'DEACTIVATE' || 'HIDE' => Icons.visibility_off_outlined,
       'REACTIVATE' || 'PUBLISH' => Icons.publish_outlined,
       'REPLACE' => Icons.swap_horiz,
+      'REORDER' => Icons.reorder,
       'CLEANUP' => Icons.cleaning_services_outlined,
       _ => Icons.edit_outlined,
     };
@@ -368,15 +370,24 @@ class _AuditDetailDialog extends StatelessWidget {
                 _DetailRow('Request ID', event.requestId ?? '—'),
                 _DetailRow('Trace ID', event.traceId ?? '—'),
                 const Divider(height: 28),
-                const Text('Before', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Before',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 6),
                 Text(event.pretty(event.beforeState)),
                 const Divider(height: 28),
-                const Text('After', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'After',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 6),
                 Text(event.pretty(event.afterState)),
                 const Divider(height: 28),
-                const Text('Metadata', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Metadata',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 6),
                 Text(event.pretty(event.metadata)),
               ],
