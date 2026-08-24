@@ -112,3 +112,13 @@ Do not use Docker Compose `down -v` unless you intentionally want to delete loca
 ## Backups
 
 See `docs/runbooks/database-backup-restore.md` for executable backup, restore and restore-rehearsal commands.
+
+## Optional demo gallery content
+
+After infrastructure, backend and Flutter are running, restore the original static prototype's remote demo imagery into an ignored local folder:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/prepare-demo-media.ps1
+```
+
+Then use **Media → Gallery → Upload batch** in the admin app. See `docs/runbooks/admin-media-management.md` for metadata and scripted-upload guidance.

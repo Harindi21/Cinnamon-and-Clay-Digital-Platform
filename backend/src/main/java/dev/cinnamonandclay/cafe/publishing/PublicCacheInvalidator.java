@@ -126,7 +126,8 @@ class PublicCacheInvalidator {
         if (resourceType.startsWith("contact.")) {
             return List.of("contact");
         }
-        if (resourceType.equals("media.asset")) {
+        if (resourceType.equals("media.asset")
+                || resourceType.equals("media.gallery-order")) {
             return List.of("media");
         }
         if (resourceType.startsWith("reviews.")) {

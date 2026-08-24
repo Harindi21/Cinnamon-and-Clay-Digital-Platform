@@ -50,6 +50,10 @@ management:
   observations:
     key-values:
       application: ${spring.application.name}
+  otlp:
+    metrics:
+      export:
+        enabled: ${OTLP_METRICS_ENABLED:false}
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING_PROBABILITY:1.0}

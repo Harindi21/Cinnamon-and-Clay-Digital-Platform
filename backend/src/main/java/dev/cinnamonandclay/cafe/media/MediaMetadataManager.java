@@ -1,7 +1,10 @@
 package dev.cinnamonandclay.cafe.media;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -9,11 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import dev.cinnamonandclay.cafe.audit.AuditAction;
 import dev.cinnamonandclay.cafe.audit.AuditTrail;
+import dev.cinnamonandclay.cafe.shared.InvalidRequestException;
 import dev.cinnamonandclay.cafe.shared.ResourceConflictException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
 
 @Service
 class MediaMetadataManager {
+
+    private static final int GALLERY_ORDER_STEP = 10;
 
     private final MediaAssetRepository repository;
     private final AuditTrail auditTrail;
@@ -63,6 +69,9 @@ class MediaMetadataManager {
             StoredMediaFile file,
             MediaPurpose purpose,
             String altText,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             int sortOrder,
             boolean active
     ) {
@@ -74,6 +83,9 @@ class MediaMetadataManager {
                 file,
                 purpose,
                 altText,
+                caption,
+                focalXPercent,
+                focalYPercent,
                 sortOrder,
                 active
         );
@@ -106,6 +118,13 @@ class MediaMetadataManager {
         asset.updateMetadata(
                 command.purpose(),
                 command.altText(),
+                command.caption() == null ? asset.caption() : command.caption(),
+                command.focalXPercent() == null
+                        ? asset.focalXPercent()
+                        : command.focalXPercent(),
+                command.focalYPercent() == null
+                        ? asset.focalYPercent()
+                        : command.focalYPercent(),
                 command.sortOrder(),
                 command.active()
         );
@@ -118,6 +137,69 @@ class MediaMetadataManager {
                 id,
                 before,
                 after
+        );
+        return after;
+    }
+
+    @Transactional
+    List<AdminMediaService.AssetResponse> reorderGallery(
+            List<AdminMediaService.GalleryOrderItem> requestedOrder
+    ) {
+        List<MediaAssetEntity> current = repository
+                .findByPurposeAndActiveTrueOrderBySortOrderAscIdAsc(MediaPurpose.GALLERY);
+
+        if (requestedOrder.size() != current.size()) {
+            throw galleryChanged();
+        }
+
+        Set<UUID> requestedIds = new HashSet<>();
+        for (AdminMediaService.GalleryOrderItem item : requestedOrder) {
+            if (!requestedIds.add(item.id())) {
+                throw new InvalidRequestException(
+                        "Gallery order contains a duplicate media asset."
+                );
+            }
+        }
+
+        Map<UUID, MediaAssetEntity> byId = current.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        MediaAssetEntity::id,
+                        asset -> asset
+                ));
+        if (!byId.keySet().equals(requestedIds)) {
+            throw galleryChanged();
+        }
+
+        List<GalleryOrderSnapshot> before = current.stream()
+                .map(GalleryOrderSnapshot::from)
+                .toList();
+
+        List<MediaAssetEntity> ordered = new ArrayList<>(requestedOrder.size());
+        int normalizedSortOrder = GALLERY_ORDER_STEP;
+        for (AdminMediaService.GalleryOrderItem item : requestedOrder) {
+            MediaAssetEntity asset = byId.get(item.id());
+            assertVersion(asset.version(), item.version());
+            asset.updateSortOrder(normalizedSortOrder);
+            ordered.add(asset);
+            normalizedSortOrder = Math.addExact(
+                    normalizedSortOrder,
+                    GALLERY_ORDER_STEP
+            );
+        }
+
+        repository.saveAllAndFlush(ordered);
+        List<AdminMediaService.AssetResponse> after = ordered.stream()
+                .map(AdminMediaService::toAdminResponse)
+                .toList();
+        auditTrail.record(
+                AuditAction.REORDER,
+                "media.gallery-order",
+                null,
+                before,
+                after.stream()
+                        .map(GalleryOrderSnapshot::from)
+                        .toList(),
+                Map.of("assetCount", after.size())
         );
         return after;
     }
@@ -216,6 +298,36 @@ class MediaMetadataManager {
         if (current != supplied) {
             throw new ResourceConflictException(
                     "This media asset changed after it was loaded. Refresh and try again."
+            );
+        }
+    }
+
+    private static ResourceConflictException galleryChanged() {
+        return new ResourceConflictException(
+                "The active gallery changed after it was loaded. Refresh and reorder again."
+        );
+    }
+
+    private record GalleryOrderSnapshot(
+            UUID id,
+            int sortOrder,
+            long version
+    ) {
+        private static GalleryOrderSnapshot from(MediaAssetEntity asset) {
+            return new GalleryOrderSnapshot(
+                    asset.id(),
+                    asset.sortOrder(),
+                    asset.version()
+            );
+        }
+
+        private static GalleryOrderSnapshot from(
+                AdminMediaService.AssetResponse asset
+        ) {
+            return new GalleryOrderSnapshot(
+                    asset.id(),
+                    asset.sortOrder(),
+                    asset.version()
             );
         }
     }

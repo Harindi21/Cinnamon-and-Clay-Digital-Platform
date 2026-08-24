@@ -10,6 +10,9 @@ void main() {
       'sizeBytes': 2048,
       'purpose': 'HERO',
       'altText': 'Cafe interior',
+      'caption': 'Morning light',
+      'focalXPercent': 35,
+      'focalYPercent': 62,
       'sortOrder': 10,
       'active': true,
       'widthPixels': 1600,
@@ -24,6 +27,8 @@ void main() {
 
     expect(asset.purpose, MediaPurpose.hero);
     expect(asset.dimensionsLabel, '1600 x 900 px');
+    expect(asset.caption, 'Morning light');
+    expect(asset.focalPointLabel, '35% x · 62% y');
     expect(asset.sizeLabel, '2 KB');
     expect(asset.version, 4);
     expect(asset.checksumSha256, hasLength(64));
@@ -51,5 +56,15 @@ void main() {
       () => MediaPurpose.fromApi('UNKNOWN'),
       throwsA(isA<FormatException>()),
     );
+  });
+  test('new media metadata defaults remain backward compatible', () {
+    final asset = AdminMediaAsset.fromJson(<String, dynamic>{
+      'id': 'media-legacy',
+      'purpose': 'GALLERY',
+    });
+
+    expect(asset.caption, isEmpty);
+    expect(asset.focalXPercent, 50);
+    expect(asset.focalYPercent, 50);
   });
 }

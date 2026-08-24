@@ -23,7 +23,7 @@ Migrate brand, about text/features, location, opening hours, social links and Wh
 
 ## PR 04 - gallery/media - complete
 
-Media metadata and S3-compatible storage are implemented together with authenticated Flutter upload/edit/replace/hide flows, binary JPEG/PNG sniffing, byte/dimension/pixel limits, singleton Hero/About placement rules, versioned cache busting and administrator orphan reconciliation. ADR 0011 records the cross-store consistency and image-processing policy.
+Media metadata and S3-compatible storage are implemented together with authenticated Flutter upload/edit/replace/hide flows, binary JPEG/PNG sniffing, byte/dimension/pixel limits, singleton Hero/About placement rules, versioned cache busting and administrator orphan reconciliation. The editorial follow-up adds captions, focal points, batch selection, atomic gallery reordering and the public lightbox. ADRs 0011 and 0015 record the cross-store and editorial ordering policies.
 
 ## PR 05 - reviews
 

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { Gallery } from '@/components/gallery';
 import { connection } from 'next/server';
 import { getPublicReviews } from '@/lib/reviews';
 
@@ -10,7 +11,8 @@ import {
 } from '@/lib/site';
 import {
   getPublicMedia,
-  mediaSrc
+  mediaSrc,
+  objectPosition
 } from '@/lib/media';
 
 export default async function Home() {
@@ -44,6 +46,7 @@ const [
             fill
             priority
             sizes="100vw"
+            style={{ objectPosition: objectPosition(media.hero) }}
           />
         )}
 
@@ -86,6 +89,7 @@ const [
               alt={media.about.alt}
               fill
               sizes="(max-width: 900px) 100vw, 45vw"
+              style={{ objectPosition: objectPosition(media.about) }}
             />
           </div>
         )}
@@ -191,21 +195,7 @@ const [
               <h2>Gallery</h2>
             </div>
 
-            <div className="galleryGrid">
-              {media.gallery.map((asset) => (
-                <article
-                  className="galleryItem"
-                  key={asset.id}
-                >
-                  <Image
-                    src={mediaSrc(asset)}
-                    alt={asset.alt}
-                    fill
-                    sizes="(max-width: 720px) 50vw, 33vw"
-                  />
-                </article>
-              ))}
-            </div>
+            <Gallery assets={media.gallery} />
           </div>
         </section>
       )}

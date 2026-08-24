@@ -29,6 +29,9 @@ void main() {
     expect(page.items.single.actorUsername, 'local.admin');
     expect(page.items.single.actorRoles, <String>['admin']);
     expect(page.items.single.action, 'UPDATE');
-    expect(page.items.single.pretty(page.items.single.afterState), contains('After'));
+    expect(
+      page.items.single.pretty(page.items.single.afterState),
+      contains('After'),
+    );
   });
 }

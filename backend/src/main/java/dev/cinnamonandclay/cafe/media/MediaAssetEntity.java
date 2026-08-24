@@ -39,6 +39,15 @@ class MediaAssetEntity {
     @Column(name = "alt_text", nullable = false, length = 300)
     private String altText;
 
+    @Column(nullable = false, length = 500)
+    private String caption;
+
+    @Column(name = "focal_x_percent", nullable = false)
+    private int focalXPercent;
+
+    @Column(name = "focal_y_percent", nullable = false)
+    private int focalYPercent;
+
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
@@ -71,6 +80,9 @@ class MediaAssetEntity {
             StoredMediaFile file,
             MediaPurpose purpose,
             String altText,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             int sortOrder,
             boolean active
     ) {
@@ -79,6 +91,9 @@ class MediaAssetEntity {
         asset.applyFile(file);
         asset.purpose = purpose;
         asset.altText = altText;
+        asset.caption = caption;
+        asset.focalXPercent = focalXPercent;
+        asset.focalYPercent = focalYPercent;
         asset.sortOrder = sortOrder;
         asset.active = active;
         asset.version = 0;
@@ -88,13 +103,23 @@ class MediaAssetEntity {
     void updateMetadata(
             MediaPurpose purpose,
             String altText,
+            String caption,
+            int focalXPercent,
+            int focalYPercent,
             int sortOrder,
             boolean active
     ) {
         this.purpose = purpose;
         this.altText = altText;
+        this.caption = caption;
+        this.focalXPercent = focalXPercent;
+        this.focalYPercent = focalYPercent;
         this.sortOrder = sortOrder;
         this.active = active;
+    }
+
+    void updateSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     void replaceFile(StoredMediaFile file) {
@@ -149,6 +174,18 @@ class MediaAssetEntity {
 
     String altText() {
         return altText;
+    }
+
+    String caption() {
+        return caption;
+    }
+
+    int focalXPercent() {
+        return focalXPercent;
+    }
+
+    int focalYPercent() {
+        return focalYPercent;
     }
 
     MediaPurpose purpose() {

@@ -16,6 +16,8 @@ class PublicCacheInvalidatorTest {
                 .containsExactly("contact");
         assertThat(PublicCacheInvalidator.tagsFor("media.asset"))
                 .containsExactly("media");
+        assertThat(PublicCacheInvalidator.tagsFor("media.gallery-order"))
+                .containsExactly("media");
         assertThat(PublicCacheInvalidator.tagsFor("reviews.review"))
                 .containsExactly("reviews");
     }

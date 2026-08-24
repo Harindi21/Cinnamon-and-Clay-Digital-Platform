@@ -124,7 +124,9 @@ class _ParagraphEditorDialogState extends State<ParagraphEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.paragraph == null ? 'New paragraph' : 'Edit paragraph'),
+      title: Text(
+        widget.paragraph == null ? 'New paragraph' : 'Edit paragraph',
+      ),
       content: SizedBox(
         width: 560,
         child: Form(
@@ -344,7 +346,8 @@ class _ContactEditorDialogState extends State<ContactEditorDialog> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('WhatsApp ordering enabled'),
                   value: _whatsappEnabled,
-                  onChanged: (value) => setState(() => _whatsappEnabled = value),
+                  onChanged: (value) =>
+                      setState(() => _whatsappEnabled = value),
                 ),
                 TextFormField(
                   controller: _whatsappNumberController,
@@ -441,7 +444,9 @@ class _OpeningHourEditorDialogState extends State<OpeningHourEditorDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.hour == null ? 'New opening hour' : 'Edit opening hour'),
+      title: Text(
+        widget.hour == null ? 'New opening hour' : 'Edit opening hour',
+      ),
       content: SizedBox(
         width: 520,
         child: Form(
@@ -499,7 +504,9 @@ class _SocialLinkEditorDialogState extends State<SocialLinkEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _platformController = TextEditingController(text: widget.link?.platform ?? '');
+    _platformController = TextEditingController(
+      text: widget.link?.platform ?? '',
+    );
     _urlController = TextEditingController(text: widget.link?.url ?? '');
     _sortController = TextEditingController(
       text: (widget.link?.sortOrder ?? 10).toString(),
@@ -535,7 +542,9 @@ class _SocialLinkEditorDialogState extends State<SocialLinkEditorDialog> {
                 maxLength: 40,
                 validator: (value) {
                   final text = value?.trim() ?? '';
-                  if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9-]{0,39}$').hasMatch(text)) {
+                  if (!RegExp(
+                    r'^[A-Za-z0-9][A-Za-z0-9-]{0,39}$',
+                  ).hasMatch(text)) {
                     return 'Use letters, numbers or hyphens.';
                   }
                   return null;
@@ -590,9 +599,8 @@ TextFormField _requiredField(
     maxLength: maxLength,
     minLines: minLines,
     maxLines: maxLines ?? 1,
-    validator: (value) => value == null || value.trim().isEmpty
-        ? '$label is required.'
-        : null,
+    validator: (value) =>
+        value == null || value.trim().isEmpty ? '$label is required.' : null,
   );
 }
 

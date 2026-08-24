@@ -40,8 +40,6 @@ class AuditRepository {
       },
     );
 
-    return AuditPageResult.fromJson(
-      response.data ?? const <String, dynamic>{},
-    );
+    return AuditPageResult.fromJson(response.data ?? const <String, dynamic>{});
   }
 }
