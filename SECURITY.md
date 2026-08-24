@@ -22,3 +22,8 @@ Application controls include:
 Local `.env` values are development placeholders only. Production environments must provide unique secrets for database/object-storage/OIDC/cache-revalidation/Grafana access through an appropriate secret manager or protected environment configuration.
 
 See `docs/architecture/threat-model.md` for the current control/backlog model and `docs/runbooks/secret-leak.md` for secret-response steps.
+
+
+## Release artifact integrity
+
+Release container images are addressed by immutable digest, scanned for HIGH/CRITICAL vulnerabilities according to the release policy, accompanied by CycloneDX SBOM artifacts and BuildKit attestations, and keyless-signed with Cosign using GitHub OIDC. Environment promotion verifies signatures and digest existence before producing a deployment manifest. No long-lived image-signing private key is stored in repository secrets.

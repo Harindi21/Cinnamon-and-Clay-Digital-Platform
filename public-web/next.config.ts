@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   poweredByHeader: false,
   turbopack: {
     // The monorepo root has its own lockfile for commit tooling. Explicitly

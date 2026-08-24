@@ -1,6 +1,6 @@
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('infra-up', 'infra-down', 'backend', 'web', 'admin', 'status')]
+    [ValidateSet('infra-up', 'infra-down', 'app-up', 'app-down', 'app-logs', 'backend', 'web', 'admin', 'status')]
     [string]$Command = 'status',
 
     [switch]$Observability
@@ -29,6 +29,9 @@ function Invoke-Compose {
     Push-Location $root
     try {
         $base = @('compose', '--env-file', '.env', '-f', 'infra/compose.yaml')
+        if ($Command -like 'app-*') {
+            $base += @('--profile', 'app')
+        }
         if ($Observability) {
             $base += @('--profile', 'observability')
         }
@@ -49,6 +52,17 @@ switch ($Command) {
     }
     'infra-down' {
         Invoke-Compose -Arguments @('down')
+    }
+    'app-up' {
+        Invoke-Compose -Arguments @('up', '-d', '--build')
+        Invoke-Compose -Arguments @('ps')
+        & (Join-Path $PSScriptRoot 'smoke-local.ps1') -IncludeWeb -Attempts 30 -RetryDelaySeconds 2
+    }
+    'app-down' {
+        Invoke-Compose -Arguments @('down')
+    }
+    'app-logs' {
+        Invoke-Compose -Arguments @('logs', '-f', 'backend', 'public-web')
     }
     'backend' {
         Assert-CommandAvailable -Name 'mvn'

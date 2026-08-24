@@ -106,10 +106,10 @@ See `docs/adrs/0012-use-append-only-administrator-audit-events.md`, `docs/adrs/0
 | Persistence | PostgreSQL 18, Flyway |
 | Identity | OIDC/OAuth2 resource server, Keycloak locally |
 | Media | S3-compatible API / MinIO locally |
-| Testing | JUnit, MockMvc, Testcontainers, Flutter tests |
+| Testing | JUnit, MockMvc, Testcontainers, Flutter tests, Playwright/Chromium E2E, Lighthouse |
 | Metrics | Micrometer, Prometheus, Grafana |
 | Tracing | Spring Boot OpenTelemetry instrumentation, opt-in OTLP export |
-| CI/security | GitHub Actions, CodeQL, Trivy, Gitleaks, Dependabot |
+| CI/security | GitHub Actions, CodeQL, Trivy, Gitleaks, Dependabot, BuildKit attestations, Cosign |
 
 ## Backend module boundaries
 
@@ -235,6 +235,17 @@ powershell -ExecutionPolicy Bypass -File tools/prepare-demo-media.ps1
 
 Then use **Media → Gallery → Upload batch** for the six gallery files and upload the Hero/About files into their singleton placements. For a scripted local bootstrap, the same tool can upload through the authenticated media API when given an administrator access token. See `docs/runbooks/admin-media-management.md`.
 
+
+### Production-like local containers
+
+To build and run the backend and public web through their production Dockerfiles together with the local infrastructure:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 app-up
+```
+
+The command builds both application images, starts the `app` Compose profile and waits for backend/web smoke checks. Tail application logs with `tools/dev.ps1 app-logs` and stop the stack with `tools/dev.ps1 app-down`.
+
 ## Local observability
 
 Start with `-Observability`, then open:
@@ -291,11 +302,18 @@ flutter analyze
 flutter test
 ```
 
-CI also validates Docker Compose, Prometheus rules/config, Grafana dashboard JSON and PowerShell script syntax. With the local stack running, a lightweight HTTP smoke check is available:
+CI also validates production container builds, Docker Compose profiles, Prometheus rules/config, Grafana/dashboard JSON, PowerShell syntax, real-Chromium browser flows and Lighthouse budgets. With the local stack running, a lightweight HTTP smoke check is available:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/smoke-local.ps1 -IncludeWeb
 ```
+
+
+## Release supply chain
+
+SemVer tags trigger the release workflow after a full source verification gate. Backend and public-web images are published to GHCR with BuildKit provenance/SBOM attestations, scanned with Trivy, keyless-signed with Cosign using GitHub OIDC and recorded in an immutable-digest `release-manifest.json`. A separate GitHub Environment-gated promotion workflow verifies signatures before producing an environment deployment manifest; provider adapters deploy `ref@sha256:digest` coordinates without rebuilding.
+
+See `docs/adrs/0016-build-once-promote-by-digest.md` and `docs/runbooks/release-promotion-and-rollback.md`.
 
 ## Repository policy and security
 

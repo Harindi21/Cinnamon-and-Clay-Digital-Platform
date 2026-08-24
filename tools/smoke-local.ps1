@@ -1,6 +1,8 @@
 param(
     [switch]$IncludeWeb,
-    [switch]$Observability
+    [switch]$Observability,
+    [ValidateRange(1, 120)][int]$Attempts = 1,
+    [ValidateRange(1, 30)][int]$RetryDelaySeconds = 2
 )
 
 . (Join-Path $PSScriptRoot '_env.ps1')
@@ -18,16 +20,24 @@ function Assert-HttpReady {
         [Parameter(Mandatory = $true)][string]$Uri
     )
 
-    try {
-        $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing -TimeoutSec 5
-        if ($response.StatusCode -lt 200 -or $response.StatusCode -ge 300) {
-            throw "HTTP $($response.StatusCode)"
+    $lastError = $null
+    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
+        try {
+            $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing -TimeoutSec 5
+            if ($response.StatusCode -lt 200 -or $response.StatusCode -ge 300) {
+                throw "HTTP $($response.StatusCode)"
+            }
+            Write-Host "[PASS] $Name -> $Uri"
+            return
         }
-        Write-Host "[PASS] $Name -> $Uri"
+        catch {
+            $lastError = $_.Exception.Message
+            if ($attempt -lt $Attempts) {
+                Start-Sleep -Seconds $RetryDelaySeconds
+            }
+        }
     }
-    catch {
-        throw "[FAIL] $Name -> $Uri :: $($_.Exception.Message)"
-    }
+    throw "[FAIL] $Name -> $Uri :: $lastError"
 }
 
 Assert-HttpReady -Name 'Backend health' -Uri "http://127.0.0.1:$backendPort/actuator/health"
@@ -40,7 +50,8 @@ Assert-HttpReady -Name 'Keycloak discovery' -Uri "http://127.0.0.1:$keycloakPort
 Assert-HttpReady -Name 'MinIO health' -Uri "http://127.0.0.1:$minioPort/minio/health/live"
 
 if ($IncludeWeb) {
-    Assert-HttpReady -Name 'Public web' -Uri "http://127.0.0.1:$webPort"
+    Assert-HttpReady -Name 'Public web readiness' -Uri "http://127.0.0.1:$webPort/api/health/ready"
+    Assert-HttpReady -Name 'Public web homepage' -Uri "http://127.0.0.1:$webPort/"
 }
 
 if ($Observability) {

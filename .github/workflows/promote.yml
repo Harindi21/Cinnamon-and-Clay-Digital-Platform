@@ -1,0 +1,139 @@
+name: Promote immutable release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment approval gate
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      release_version:
+        description: Release version being promoted
+        required: true
+        type: string
+      backend_digest:
+        description: Backend sha256 digest from release-manifest.json
+        required: true
+        type: string
+      public_web_digest:
+        description: Public-web sha256 digest from release-manifest.json
+        required: true
+        type: string
+      source_revision:
+        description: 40-character source revision from release-manifest.json
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: images
+        shell: bash
+        run: |
+          digest_pattern='^sha256:[a-f0-9]{64}$'
+          revision_pattern='^[a-f0-9]{40}$'
+          version_pattern='^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          if [[ ! "${{ inputs.backend_digest }}" =~ $digest_pattern ]]; then
+            echo 'Invalid backend digest.' >&2
+            exit 1
+          fi
+          if [[ ! "${{ inputs.public_web_digest }}" =~ $digest_pattern ]]; then
+            echo 'Invalid public-web digest.' >&2
+            exit 1
+          fi
+          if [[ ! "${{ inputs.source_revision }}" =~ $revision_pattern ]]; then
+            echo 'Invalid source revision.' >&2
+            exit 1
+          fi
+          if [[ ! "${{ inputs.release_version }}" =~ $version_pattern ]]; then
+            echo 'Invalid release version.' >&2
+            exit 1
+          fi
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "backend=ghcr.io/$owner/cinnamon-clay-backend" >> "$GITHUB_OUTPUT"
+          echo "web=ghcr.io/$owner/cinnamon-clay-public-web" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: sigstore/cosign-installer@v3
+      - name: Verify release signatures before promotion
+        env:
+          BACKEND: ${{ steps.images.outputs.backend }}
+          BACKEND_DIGEST: ${{ inputs.backend_digest }}
+          WEB: ${{ steps.images.outputs.web }}
+          WEB_DIGEST: ${{ inputs.public_web_digest }}
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          identity="^https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/(tags|heads)/"
+          issuer='https://token.actions.githubusercontent.com'
+          cosign verify --certificate-identity-regexp "$identity" --certificate-oidc-issuer "$issuer" "$BACKEND@$BACKEND_DIGEST"
+          cosign verify --certificate-identity-regexp "$identity" --certificate-oidc-issuer "$issuer" "$WEB@$WEB_DIGEST"
+      - name: Verify referenced digests exist in the registry
+        env:
+          BACKEND: ${{ steps.images.outputs.backend }}
+          BACKEND_DIGEST: ${{ inputs.backend_digest }}
+          WEB: ${{ steps.images.outputs.web }}
+          WEB_DIGEST: ${{ inputs.public_web_digest }}
+        run: |
+          docker buildx imagetools inspect "$BACKEND@$BACKEND_DIGEST" > /dev/null
+          docker buildx imagetools inspect "$WEB@$WEB_DIGEST" > /dev/null
+      - name: Produce environment deployment manifest
+        env:
+          TARGET_ENVIRONMENT: ${{ inputs.environment }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          BACKEND: ${{ steps.images.outputs.backend }}
+          BACKEND_DIGEST: ${{ inputs.backend_digest }}
+          WEB: ${{ steps.images.outputs.web }}
+          WEB_DIGEST: ${{ inputs.public_web_digest }}
+          SOURCE_REVISION: ${{ inputs.source_revision }}
+        run: |
+          mkdir -p promotion
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          manifest = {
+              'schemaVersion': '1',
+              'environment': os.environ['TARGET_ENVIRONMENT'],
+              'releaseVersion': os.environ['RELEASE_VERSION'],
+              'source': {
+                  'repository': os.environ['GITHUB_REPOSITORY'],
+                  'revision': os.environ['SOURCE_REVISION'],
+              },
+              'images': {
+                  'backend': {
+                      'ref': os.environ['BACKEND'],
+                      'digest': os.environ['BACKEND_DIGEST'],
+                  },
+                  'publicWeb': {
+                      'ref': os.environ['WEB'],
+                      'digest': os.environ['WEB_DIGEST'],
+                  },
+              },
+              'promotedAt': datetime.now(timezone.utc).isoformat(),
+          }
+          Path('promotion/deployment-manifest.json').write_text(
+              json.dumps(manifest, indent=2) + '\n', encoding='utf-8'
+          )
+          PY
+          python -m json.tool promotion/deployment-manifest.json > /dev/null
+          cat promotion/deployment-manifest.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: promotion-${{ inputs.environment }}-${{ inputs.release_version }}
+          path: promotion/deployment-manifest.json
+          retention-days: 90

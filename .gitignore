@@ -38,3 +38,7 @@ public-web/next-env.d.ts
 
 # local backup artifacts
 backups/
+.local/lighthouse/
+.pytest_cache/
+__pycache__/
+tests/e2e/__pycache__/
