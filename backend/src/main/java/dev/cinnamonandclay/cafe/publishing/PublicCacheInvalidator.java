@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import dev.cinnamonandclay.cafe.audit.AdminChangeRecordedEvent;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -102,7 +102,7 @@ class PublicCacheInvalidator {
                 && !properties.secret().isBlank();
     }
 
-    private String body(List<String> tags) throws JsonProcessingException {
+    private String body(List<String> tags) throws JacksonException {
         return objectMapper.writeValueAsString(Map.of("tags", tags));
     }
 

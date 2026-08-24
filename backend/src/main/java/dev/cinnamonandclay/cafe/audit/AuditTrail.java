@@ -17,12 +17,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 public class AuditTrail {
@@ -170,7 +170,7 @@ public class AuditTrail {
         JsonNode sanitized = sanitize(source, 0);
         try {
             return objectMapper.writeValueAsString(sanitized);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Unable to serialize audit metadata.", exception);
         }
     }
@@ -184,7 +184,7 @@ public class AuditTrail {
         }
         if (node.isObject()) {
             ObjectNode sanitized = JsonNodeFactory.instance.objectNode();
-            node.fields().forEachRemaining(entry -> {
+            node.properties().forEach(entry -> {
                 if (isSensitiveField(entry.getKey())) {
                     sanitized.put(entry.getKey(), "[REDACTED]");
                 } else {
@@ -206,9 +206,9 @@ public class AuditTrail {
             }
             return sanitized;
         }
-        if (node.isTextual() && node.textValue().length() > MAX_TEXT_LENGTH) {
+        if (node.isString() && node.stringValue().length() > MAX_TEXT_LENGTH) {
             return JsonNodeFactory.instance.textNode(
-                    node.textValue().substring(0, MAX_TEXT_LENGTH) + "…[TRUNCATED]"
+                    node.stringValue().substring(0, MAX_TEXT_LENGTH) + "…[TRUNCATED]"
             );
         }
         return node.deepCopy();

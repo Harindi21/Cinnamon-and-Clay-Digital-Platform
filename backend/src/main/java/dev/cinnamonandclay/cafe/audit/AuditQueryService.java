@@ -14,9 +14,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import dev.cinnamonandclay.cafe.shared.InvalidRequestException;
 import dev.cinnamonandclay.cafe.shared.ResourceNotFoundException;
@@ -227,7 +227,7 @@ class AuditQueryService {
     private List<String> parseStringList(String json) {
         try {
             return objectMapper.readerForListOf(String.class).readValue(json);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Unable to read audit actor roles.", exception);
         }
     }
@@ -239,7 +239,7 @@ class AuditQueryService {
     private JsonNode parseJson(String json) {
         try {
             return objectMapper.readTree(json);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Unable to read audit JSON.", exception);
         }
     }
