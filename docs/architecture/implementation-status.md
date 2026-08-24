@@ -11,20 +11,20 @@ This document keeps portfolio claims aligned with code that exists in the reposi
 | Admin content/contact | Complete | Flutter Site settings management with resource-level optimistic concurrency. |
 | Reviews | Complete | Draft/published/hidden lifecycle, public filtering and Flutter moderation. |
 | OIDC/RBAC | Complete for portfolio scope | Keycloak local environment, PKCE native login, JWT resource server and API-client roles. Production IdP/environment configuration remains deployment work. |
-| Native admin runner | Partial | Flutter/Dart application code and `tool/bootstrap_android.ps1` are present, but the generated/reviewed `admin-flutter/android/` runner still needs to be committed for clone-and-run Android builds. |
+| Native admin runner | Complete for Android portfolio scope | Committed Android host, API 24 baseline, AppAuth callback, debug-only cleartext policy, backup exclusion, environment-only release signing, PR APK/AAB builds and path-scoped emulator launch/callback smoke. External-browser Keycloak login remains a human-in-the-loop device check. |
 | Media lifecycle | Complete for portfolio scope | S3-compatible storage + PostgreSQL metadata, Flutter single/batch upload, edit/replace/hide, atomic drag-to-reorder gallery, captions/focal points, binary sniffing, byte/dimension/pixel limits, SHA-256 metadata, singleton placement invariants, versioned cache busting and admin-only orphan reconciliation. |
 | Administrator audit trail | Complete for portfolio scope | Append-only PostgreSQL audit events, OIDC actor/roles, safe before/after state, request/trace correlation, bounded keyset query API and administrator-only Flutter viewer. Retention/archival policy remains a production governance decision. |
 | Public cache freshness | Complete for portfolio scope | Next.js capability tags plus authenticated best-effort after-commit revalidation. Five-minute fetch TTL remains the failure fallback. |
 | Observability | Complete for portfolio scope | Request IDs, trace/span correlation, Problem Details correlation, Prometheus metrics, optional OpenTelemetry export, ECS production logs, local Prometheus/Grafana profile, dashboard and alert rules. Production collector/destination and alert calibration remain deployment work. |
 | Backup / recovery | Partial-to-strong | Executable backup, destructive restore and isolated restore-rehearsal scripts exist with checksum metadata and schema/table verification. Automated encrypted/off-site retention, PITR and measured production RPO/RTO remain provider work. |
 | Delivery pipeline | Complete for provider-neutral portfolio scope | Production container builds are PR-validated; SemVer releases publish GHCR images, BuildKit provenance/SBOM attestations, CycloneDX SBOMs, Trivy gates, keyless Cosign signatures and immutable release manifests. GitHub Environment promotion verifies signatures/digests and emits deployment manifests. A cloud/provider deployment adapter remains environment work. |
-| End-to-end quality | Strong for public experience | Backend integration + Flutter tests remain; CI now runs the built Next.js app in Chromium against a deterministic public API contract, covers gallery keyboard/focus behavior and media headers, and enforces Lighthouse accessibility/performance budgets. Full native-device admin E2E remains. |
+| End-to-end quality | Strong | Backend integration + Flutter tests, built Next.js Chromium E2E/Lighthouse budgets, Android APK/AAB assembly, AppAuth manifest verification and emulator launch smoke are automated. External-browser credential entry is intentionally kept out of CI. |
 | Portfolio release package | Partial | ADRs, diagrams, threat model, runbooks and operational dashboard exist. Final screenshots, demo video, measured quality evidence, tagged release and case-study summary remain. |
 
 ## Recommended next sequence
 
-1. Commit/review the generated Android runner so the admin application is clone-and-run, then add a real emulator/device OIDC smoke flow.
-2. Configure GitHub Environments (`staging`, `production`) and exercise one signed release + promotion rehearsal to capture evidence.
-3. Rehearse backup/restore and capture real local evidence; later replace local objectives with provider-backed RPO/RTO evidence.
+1. Run `tools/admin-android-smoke.ps1`, complete one real Keycloak browser login on an emulator/device and capture evidence.
+2. Configure GitHub Environments (`staging`, `production`, `mobile-release`) and exercise signed server + Android release rehearsals.
+3. Rehearse backup/restore and capture measured local recovery evidence; later replace local objectives with provider-backed RPO/RTO evidence.
 4. Add the chosen cloud/provider deployment adapter and production secrets/telemetry destinations.
 5. Produce the portfolio release: screenshots, demo video, tagged release and concise engineering case study.

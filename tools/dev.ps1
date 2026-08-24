@@ -107,7 +107,7 @@ switch ($Command) {
         Assert-CommandAvailable -Name 'adb'
         $adminRoot = Join-Path $root 'admin-flutter'
         if (-not (Test-Path -LiteralPath (Join-Path $adminRoot 'android'))) {
-            throw 'admin-flutter/android is missing. Run admin-flutter/tool/bootstrap_android.ps1 once, review the generated runner, then retry.'
+            throw 'admin-flutter/android is missing. Restore the committed Android runner from Git, then retry.'
         }
 
         & adb reverse "tcp:$backendPort" "tcp:$backendPort"
@@ -118,6 +118,7 @@ switch ($Command) {
         Push-Location $adminRoot
         try {
             & flutter run `
+                '--dart-define=APP_ENVIRONMENT=local' `
                 "--dart-define=API_BASE_URL=http://localhost:$backendPort" `
                 "--dart-define=OIDC_ISSUER_URL=http://localhost:$keycloakPort/realms/cinnamon-clay" `
                 '--dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile' `

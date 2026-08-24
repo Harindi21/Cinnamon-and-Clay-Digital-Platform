@@ -73,23 +73,21 @@ The launcher passes `BACKEND_INTERNAL_URL=http://127.0.0.1:8082`, so Next.js doe
 
 ## Terminal 4 - Flutter admin
 
-Generate/configure the Android runner once from a clean working tree if it has not yet been committed:
-
-```powershell
-Set-Location admin-flutter
-powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
-Set-Location ..
-```
-
-Start an emulator/device, then:
+The Android runner is committed. Start an emulator/device, then:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
 ```
 
-The launcher configures `adb reverse` for the backend and Keycloak, then supplies the native OIDC/API `dart-define` values.
+The launcher configures `adb reverse` for backend `8082` and Keycloak `8081`, then supplies the local OIDC/API `dart-define` values.
 
-Review and commit the generated `android/` runner instead of regenerating it for every session. See `docs/runbooks/admin-oidc-local.md`.
+After native/auth changes, run the stronger device smoke:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/admin-android-smoke.ps1
+```
+
+See `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/admin-android-device-smoke.md`.
 
 ## Smoke the local stack
 

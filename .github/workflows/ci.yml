@@ -113,10 +113,16 @@ jobs:
 
   admin-flutter:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.1'
           channel: stable
           cache: true
       - name: Install dependencies
@@ -128,6 +134,51 @@ jobs:
       - name: Test
         working-directory: admin-flutter
         run: flutter test
+      - name: Build Android debug APK
+        working-directory: admin-flutter
+        run: >-
+          flutter build apk --debug
+          --dart-define=APP_ENVIRONMENT=local
+          --dart-define=API_BASE_URL=http://localhost:8082
+          --dart-define=OIDC_ISSUER_URL=http://localhost:8081/realms/cinnamon-clay
+          --dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile
+          --dart-define=OIDC_ALLOW_INSECURE=true
+      - name: Verify AppAuth callback is packaged
+        working-directory: admin-flutter
+        shell: bash
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest print \
+            build/app/outputs/flutter-apk/app-debug.apk \
+            > "$RUNNER_TEMP/admin-debug-manifest.xml"
+          grep -q 'net.openid.appauth.RedirectUriReceiverActivity' "$RUNNER_TEMP/admin-debug-manifest.xml"
+          grep -q 'dev.cinnamonandclay.admin' "$RUNNER_TEMP/admin-debug-manifest.xml"
+      - name: Prove a production-signed app bundle can be built
+        working-directory: admin-flutter
+        shell: bash
+        run: |
+          keytool -genkeypair -noprompt \
+            -keystore "$RUNNER_TEMP/admin-ci.jks" \
+            -storepass ci-only-password \
+            -keypass ci-only-password \
+            -alias cinnamon-clay-ci \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 2 \
+            -dname "CN=Cinnamon Clay CI,OU=Engineering,O=Cinnamon Clay,L=Colombo,C=LK"
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/admin-ci.jks"
+          export ANDROID_KEYSTORE_PASSWORD=ci-only-password
+          export ANDROID_KEY_ALIAS=cinnamon-clay-ci
+          export ANDROID_KEY_PASSWORD=ci-only-password
+          flutter build appbundle --release \
+            --dart-define=APP_ENVIRONMENT=production \
+            --dart-define=API_BASE_URL=https://api.invalid.cinnamon-clay.example \
+            --dart-define=OIDC_ISSUER_URL=https://identity.invalid.cinnamon-clay.example/realms/cinnamon-clay \
+            --dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile \
+            --dart-define=OIDC_ALLOW_INSECURE=false
+          jarsigner -verify -verbose -certs \
+            build/app/outputs/bundle/release/app-release.aab \
+            > "$RUNNER_TEMP/admin-ci-aab-signature.txt" 2>&1
+          grep -q 'jar verified.' "$RUNNER_TEMP/admin-ci-aab-signature.txt"
 
   container-build:
     runs-on: ubuntu-latest
@@ -180,7 +231,7 @@ jobs:
         shell: pwsh
         run: |
           $failed = $false
-          Get-ChildItem tools -Filter *.ps1 | ForEach-Object {
+          Get-ChildItem -Path tools, admin-flutter/tool -Filter *.ps1 -File | ForEach-Object {
             $tokens = $null
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile(

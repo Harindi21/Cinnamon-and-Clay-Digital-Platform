@@ -133,7 +133,7 @@ Spring Modulith architecture verification runs in the backend test suite. Public
 
 ### Prerequisites
 
-Install Git, Docker Desktop, Java 21, Maven, Node.js 24+, npm and Flutter stable. Android administration also requires the Android SDK/ADB and an emulator or device.
+Install Git, Docker Desktop, Java 21, Maven, Node.js 24+, npm and Flutter 3.47.1 (stable). Android administration also requires the Android SDK/ADB and an emulator or device.
 
 ### 1. Configure
 
@@ -207,23 +207,19 @@ The launcher points Next.js to the configured backend port, so developers do not
 
 ### 5. Start the Flutter admin
 
-The generated Android runner is still an explicit repository packaging task. Generate it once if `admin-flutter/android/` is absent:
-
-```powershell
-Set-Location admin-flutter
-powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
-Set-Location ..
-```
-
-Start an emulator/device, then:
+The Android runner is committed under `admin-flutter/android/`; no platform regeneration is required after cloning. Start an emulator/device, then:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
 ```
 
-The launcher configures ADB reverse mappings and the local API/OIDC `dart-define` values.
+The launcher configures ADB reverse mappings for backend `8082` and Keycloak `8081`, then supplies the local API/OIDC `dart-define` values. For native packaging + callback + emulator verification, run:
 
-See `docs/runbooks/local-development.md` and `docs/runbooks/admin-oidc-local.md`.
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/admin-android-smoke.ps1
+```
+
+See `docs/runbooks/local-development.md`, `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/admin-android-device-smoke.md`.
 
 ### 6. Optional: restore the original demo photography
 
@@ -294,15 +290,17 @@ npm run lint
 npm run build
 ```
 
-Flutter:
+Flutter / Android:
 
 ```powershell
 Set-Location admin-flutter
+flutter pub get
 flutter analyze
 flutter test
+flutter build apk --debug --dart-define=APP_ENVIRONMENT=local
 ```
 
-CI also validates production container builds, Docker Compose profiles, Prometheus rules/config, Grafana/dashboard JSON, PowerShell syntax, real-Chromium browser flows and Lighthouse budgets. With the local stack running, a lightweight HTTP smoke check is available:
+CI also validates Android debug APK and production-signed AAB assembly, AppAuth callback packaging, path-scoped emulator launch smoke, production container builds, Docker Compose profiles, Prometheus rules/config, Grafana/dashboard JSON, PowerShell syntax, real-Chromium browser flows and Lighthouse budgets. With the local stack running, a lightweight HTTP smoke check is available:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/smoke-local.ps1 -IncludeWeb
@@ -313,7 +311,9 @@ powershell -ExecutionPolicy Bypass -File tools/smoke-local.ps1 -IncludeWeb
 
 SemVer tags trigger the release workflow after a full source verification gate. Backend and public-web images are published to GHCR with BuildKit provenance/SBOM attestations, scanned with Trivy, keyless-signed with Cosign using GitHub OIDC and recorded in an immutable-digest `release-manifest.json`. A separate GitHub Environment-gated promotion workflow verifies signatures before producing an environment deployment manifest; provider adapters deploy `ref@sha256:digest` coordinates without rebuilding.
 
-See `docs/adrs/0016-build-once-promote-by-digest.md` and `docs/runbooks/release-promotion-and-rollback.md`.
+Android distribution consumes the same immutable platform tag through a separate protected `mobile-release` workflow. It builds a production-configured signed AAB, verifies the JAR signature, records a SHA-256 and release manifest, creates a GitHub provenance attestation and attaches versioned evidence to the existing GitHub Release without overwriting prior assets.
+
+See `docs/adrs/0016-build-once-promote-by-digest.md`, `docs/adrs/0017-commit-and-harden-the-android-admin-runner.md`, `docs/runbooks/release-promotion-and-rollback.md` and `docs/runbooks/admin-android-release.md`.
 
 ## Repository policy and security
 
@@ -337,16 +337,16 @@ See `SECURITY.md` and `docs/architecture/threat-model.md`.
 
 ## Architecture decisions
 
-Significant decisions are recorded as ADRs under `docs/adrs`, including modular-monolith architecture, versioned REST, PostgreSQL/Flyway, OIDC, object storage, client presentation boundaries, authorization, optimistic concurrency, resource-oriented site administration, hardened media lifecycle, append-only auditing, cache invalidation and observability.
+Significant decisions are recorded as ADRs under `docs/adrs`, including modular-monolith architecture, versioned REST, PostgreSQL/Flyway, OIDC, object storage, client presentation boundaries, authorization, optimistic concurrency, resource-oriented site administration, hardened media lifecycle, append-only auditing, cache invalidation, observability, build-once promotion and the hardened committed Android runner.
 
 ## Delivery status
 
-The strongest remaining gaps are no longer core CRUD. They are release engineering and portfolio evidence:
+The strongest remaining gaps are now environment rehearsal and portfolio evidence rather than missing application architecture:
 
-1. commit/review the native Android runner;
-2. publish/sign immutable container images with SBOM/provenance and controlled promotion/rollback;
-3. add browser/admin E2E, accessibility and performance-budget evidence;
-4. capture a real restore rehearsal and production-like recovery objectives;
+1. exercise a real Android/Keycloak login on an emulator/device and capture evidence;
+2. configure GitHub Environments and rehearse one signed backend/web + Android release;
+3. capture a restore rehearsal with measured local recovery timings;
+4. add the chosen cloud/provider adapter plus real secrets/telemetry destinations;
 5. create the final tagged portfolio release with screenshots, demo video and case-study narrative.
 
 See `docs/architecture/implementation-status.md` for the claim-by-claim status matrix.

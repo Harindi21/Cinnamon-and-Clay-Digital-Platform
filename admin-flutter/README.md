@@ -2,36 +2,51 @@
 
 The Flutter administrator application is the staff-facing control plane for the platform. It uses OIDC Authorization Code + PKCE for authentication and the Spring API for all authorization and persistence decisions.
 
-Current administrator workspaces cover:
+Administrator workspaces cover:
 
 - catalog/menu management;
 - site content, contact details, hours and social links;
-- media upload, replacement, placement, hide/reactivate and object-storage maintenance;
+- media upload, replacement, placement, gallery ordering, hide/reactivate and object-storage maintenance;
 - review moderation;
 - administrator-only, read-only audit history with actor, action, resource, request/trace IDs and before/after state.
 
 The application uses `flutter_appauth` for browser-based OIDC + PKCE, `flutter_secure_storage` for token storage, Riverpod for session/application state, Dio for authenticated APIs, and `file_selector` for native image selection. Every API request also carries a bounded `X-Request-Id` so user-visible failures can be correlated with backend logs and audit events.
 
-## Local Android setup
+## Android runner
 
-The repository intentionally keeps native runner generation explicit so it is produced by the team's installed Flutter SDK and reviewed as native production code. From the repository root:
+`android/` is committed and reviewable production code. CI pins Flutter 3.47.1 instead of floating on the stable channel so native build evidence remains reproducible. The runner uses application ID `dev.cinnamonandclay.admin`, Android API 24+, the custom AppAuth redirect `dev.cinnamonandclay.admin:/oauthredirect`, debug-only cleartext networking, explicit backup exclusion and environment-only release signing. The Gradle distribution is pinned by version and SHA-256; Flutter's SDK injects its standard wrapper launcher/JAR when needed, so generated wrapper binaries do not create Git noise.
 
-```powershell
-Set-Location admin-flutter
-powershell -ExecutionPolicy Bypass -File tool/bootstrap_android.ps1
-```
+Do **not** run `flutter create` over the repository as part of normal setup. Restore `admin-flutter/android/` from Git if it is missing. The legacy `tool/bootstrap_android.ps1` entrypoint now delegates to the repository smoke verifier rather than regenerating native source.
 
-The script generates the Android platform, preserves repository-owned Dart source, sets Android API 23 for secure storage, registers the AppAuth redirect scheme, disables Android application backup for auth storage, enables cleartext traffic only in the debug manifest, and runs `flutter pub get`.
-
-Once reviewed, commit `admin-flutter/android/`. The same runner hosts the native media file selector.
-
-For normal local development after that, the root helper configures ADB port reversal and all Dart defines from `.env`:
+Normal local development:
 
 ```powershell
-./tools/dev.ps1 admin
+powershell -ExecutionPolicy Bypass -File tools/dev.ps1 admin
 ```
 
-See `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/local-development.md` for the complete flow.
+A stronger device/emulator smoke is available from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/admin-android-smoke.ps1
+```
+
+See `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/admin-android-device-smoke.md`.
+
+## Environment contract
+
+Dart compile-time defines support three named environments: `local`, `staging`, and `production`. Non-local startup validation requires HTTPS API/OIDC endpoints and rejects `OIDC_ALLOW_INSECURE=true`. Release-mode startup also refuses an omitted environment or `APP_ENVIRONMENT=local`, preventing an accidentally signed local configuration from behaving like a production build.
+
+Local development defaults are:
+
+```text
+APP_ENVIRONMENT=local
+API_BASE_URL=http://localhost:8082
+OIDC_ISSUER_URL=http://localhost:8081/realms/cinnamon-clay
+OIDC_CLIENT_ID=cinnamon-clay-admin-mobile
+OIDC_REDIRECT_URL=dev.cinnamonandclay.admin:/oauthredirect
+```
+
+The debug Android manifest/network-security configuration is the only build variant that permits cleartext HTTP.
 
 ## Quality checks
 
@@ -39,6 +54,11 @@ See `docs/runbooks/admin-oidc-local.md` and `docs/runbooks/local-development.md`
 flutter pub get
 flutter analyze
 flutter test
+flutter build apk --debug
 ```
+
+CI also builds a release AAB with an ephemeral signing key to prove the signing path works, and a path-scoped emulator workflow launches the native application and verifies the AppAuth callback registration.
+
+Production AABs are built through `.github/workflows/android-release.yml` using the protected `mobile-release` GitHub Environment. The workflow emits a versioned signed AAB, SHA-256, signer-verification output, a `cinnamon-clay-admin-<version>-<build-number>.release.json` manifest, and a GitHub/Sigstore build-provenance attestation. See `docs/runbooks/admin-android-release.md`.
 
 The application does not contain a password form and does not store administrator passwords. Authentication is delegated to the configured OIDC provider; authorization remains enforced by the Spring API. The audit workspace is intentionally administrator-only even though editors can perform ordinary content operations.
