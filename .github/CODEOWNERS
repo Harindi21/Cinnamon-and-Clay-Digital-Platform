@@ -1,9 +1,9 @@
-# Replace with your GitHub username after pushing the repo.
-* @YOUR_GITHUB_USERNAME
+# Repository ownership. Keep release/security paths explicitly reviewable even in a single-owner portfolio repo.
+* @Harindi21
 
-/backend/ @YOUR_GITHUB_USERNAME
-/public-web/ @YOUR_GITHUB_USERNAME
-/admin-flutter/ @YOUR_GITHUB_USERNAME
-/infra/ @YOUR_GITHUB_USERNAME
-/docs/adrs/ @YOUR_GITHUB_USERNAME
-/.github/ @YOUR_GITHUB_USERNAME
+/backend/ @Harindi21
+/public-web/ @Harindi21
+/admin-flutter/ @Harindi21
+/infra/ @Harindi21
+/docs/adrs/ @Harindi21
+/.github/ @Harindi21
