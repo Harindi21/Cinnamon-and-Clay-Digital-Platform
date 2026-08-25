@@ -13,6 +13,7 @@
 - [ ] Browser E2E/Lighthouse, if customer experience is affected
 - [ ] Production container build, if runtime/dependencies are affected
 - [ ] Flutter analyze/test, if affected
+- [ ] Android APK/AAB + callback smoke, if native/auth configuration is affected
 - [ ] Manual smoke test, if appropriate
 
 ## Risk and rollback

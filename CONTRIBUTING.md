@@ -20,6 +20,7 @@ A change is done when:
 - API/database changes are backward-compatible or documented;
 - migrations are forward-only and reviewed;
 - security impact has been considered;
+- native Android/auth changes build the committed runner and preserve the registered OIDC callback;
 - operational impact and rollback are documented when relevant;
 - administrator mutations preserve audit coverage and public mutations preserve cache-freshness behavior;
 - ADRs are added or updated for material architectural decisions.

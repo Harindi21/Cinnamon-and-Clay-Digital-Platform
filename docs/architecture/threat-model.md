@@ -7,7 +7,7 @@
 - append-only administrator change history;
 - customer-visible availability and freshness;
 - database and media backups;
-- deployment credentials, cache-revalidation secret and repository secrets.
+- deployment credentials, Android signing material, cache-revalidation secret and repository secrets.
 
 ## Important threats
 
@@ -23,12 +23,14 @@
 - vulnerable dependencies/base images;
 - destructive migration or accidental data loss;
 - denial of service against public endpoints;
-- supply-chain compromise in CI actions/images.
+- supply-chain compromise in CI actions/images or Android build tooling;
+- malicious app impersonation/callback interception against the native custom-scheme redirect.
 
 ## Implemented identity controls
 
 - administrator authentication is delegated through OIDC;
-- native clients use Authorization Code with PKCE;
+- native clients use Authorization Code with PKCE through the system browser;
+- the Android callback URI is pinned across client validation, AppAuth packaging and Keycloak; PKCE limits authorization-code theft even though custom-scheme ownership itself cannot be globally exclusive;
 - the API validates JWT issuer, signature, lifetime and audience;
 - privileged API routes enforce server-side RBAC;
 - CSRF checks remain enabled generally; the stateless bearer-token administrator API path is explicitly excluded because it does not use cookie authentication;
@@ -60,12 +62,12 @@
 
 ## Controls backlog / deployment work
 
-- confirm output-encoding/content restrictions with browser E2E/security tests;
 - production edge rate limiting/WAF policy if traffic requires it;
-- immutable image/action digest pinning after bootstrap;
+- immutable third-party action digest pinning after bootstrap;
 - production OIDC/key rotation and secret manager integration;
+- consider verified Android App Links instead of a custom scheme if a stable production domain and association file are available;
 - encrypted off-site database backup retention and PITR;
 - object-storage versioning/backup/replication aligned with database recovery;
 - centralized log/trace destination with access controls and retention;
 - audit retention/archive policy owned outside normal application credentials;
-- signed images, SBOM/provenance and controlled environment promotion.
+- real Play Console application/service-account boundary and store rollout controls.

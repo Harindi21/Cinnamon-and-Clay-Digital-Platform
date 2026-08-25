@@ -1,0 +1,14 @@
+# Flutter injects the wrapper launchers/JAR from its SDK cache; the pinned properties stay in Git.
+gradle-wrapper.jar
+/.gradle
+/captures/
+/gradlew
+/gradlew.bat
+/local.properties
+GeneratedPluginRegistrant.java
+.cxx/
+
+# Never commit Android signing material.
+key.properties
+**/*.keystore
+**/*.jks
