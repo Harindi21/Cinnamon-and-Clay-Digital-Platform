@@ -66,21 +66,5 @@ jobs:
           profile: pixel_6
           disable-animations: true
           disk-size: 4096M
-          script: |
-            cd admin-flutter
-            flutter test integration_test/app_smoke_test.dart -d emulator-5554 \
-              --dart-define=APP_ENVIRONMENT=local \
-              --dart-define=API_BASE_URL=http://localhost:8082 \
-              --dart-define=OIDC_ISSUER_URL=http://localhost:8081/realms/cinnamon-clay \
-              --dart-define=OIDC_CLIENT_ID=cinnamon-clay-admin-mobile \
-              --dart-define=OIDC_ALLOW_INSECURE=true
-            adb install -r build/app/outputs/flutter-apk/app-debug.apk
-            adb shell am start -W \
-              -n dev.cinnamonandclay.admin/.MainActivity
-            adb shell pidof dev.cinnamonandclay.admin
-            callback="$(adb shell cmd package resolve-activity --brief \
-              -a android.intent.action.VIEW \
-              -c android.intent.category.BROWSABLE \
-              -d 'dev.cinnamonandclay.admin:/oauthredirect' | tr -d '\r')"
-            echo "OIDC callback resolves to: $callback"
-            echo "$callback" | grep -q 'net.openid.appauth.RedirectUriReceiverActivity'
+          working-directory: admin-flutter
+          script: bash ./tool/run_android_emulator_smoke.sh

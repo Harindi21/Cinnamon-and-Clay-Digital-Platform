@@ -64,6 +64,8 @@ flutter build apk --debug
 
 CI also builds a release AAB with an ephemeral signing key to prove the signing path works, and a path-scoped emulator workflow launches the native application and verifies the AppAuth callback registration.
 
+The emulator action intentionally receives one command, `bash ./tool/run_android_emulator_smoke.sh`, with `admin-flutter` as its working directory. `reactivecircus/android-emulator-runner` parses each newline in its `script:` input as a separate `sh -c` invocation; keeping shell continuations, directory changes and callback variables inside the repository-owned script prevents those commands from being split across processes. The script also emits bounded emulator diagnostics on failure.
+
 Production AABs are built through `.github/workflows/android-release.yml` using the protected `mobile-release` GitHub Environment. The workflow emits a versioned signed AAB, SHA-256, signer-verification output, a `cinnamon-clay-admin-<version>-<build-number>.release.json` manifest, and a GitHub/Sigstore build-provenance attestation. See `docs/runbooks/admin-android-release.md`.
 
 The application does not contain a password form and does not store administrator passwords. Authentication is delegated to the configured OIDC provider; authorization remains enforced by the Spring API. The audit workspace is intentionally administrator-only even though editors can perform ordinary content operations.
