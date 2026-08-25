@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM maven:3.9-eclipse-temurin-21 AS dependencies
+FROM maven:3-eclipse-temurin-26 AS dependencies
 WORKDIR /workspace
 COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 \
