@@ -58,7 +58,8 @@
 - public cache invalidation is server-to-server, allow-listed by tag and protected with a per-environment shared secret using constant-time comparison;
 - failed cache invalidation does not roll back a committed business write; the bounded Next.js TTL is the fallback;
 - Prometheus/Grafana and alert rules are available through an optional local profile;
-- backup, destructive restore and isolated restore-rehearsal scripts are checked into the repository; backup artifacts are Git-ignored.
+- backup, destructive restore and isolated restore-rehearsal scripts are checked into the repository; backup artifacts are Git-ignored;
+- tag-triggered releases and promotion require the tagged commit to remain reachable from `main`; promotion resolves source/image coordinates from the published GitHub Release manifest, verifies its checksum and tag-to-commit binding, and requires Cosign signatures issued by this repository's release workflow for the exact promoted tag.
 
 ## Controls backlog / deployment work
 

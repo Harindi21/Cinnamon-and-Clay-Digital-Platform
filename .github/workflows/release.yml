@@ -21,6 +21,8 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - id: version
         name: Resolve and validate release version
         shell: bash
@@ -29,6 +31,12 @@ jobs:
         run: |
           if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
             version="${GITHUB_REF_NAME#v}"
+            git fetch --force origin '+refs/heads/main:refs/remotes/origin/main'
+            source_revision="$(git rev-parse HEAD)"
+            if ! git merge-base --is-ancestor "$source_revision" origin/main; then
+              echo "Release tag '${GITHUB_REF_NAME}' is not reachable from origin/main." >&2
+              exit 1
+            fi
           else
             version="$REQUESTED_VERSION"
           fi
@@ -309,6 +317,7 @@ jobs:
           WEB_IMAGE: ${{ needs.build-public-web.outputs.image }}
           WEB_DIGEST: ${{ needs.build-public-web.outputs.digest }}
         run: |
+          export SOURCE_REVISION="$(git rev-parse HEAD)"
           python - <<'PY'
           import json, os
           from datetime import datetime, timezone
@@ -321,7 +330,7 @@ jobs:
               'releaseVersion': os.environ['RELEASE_VERSION'],
               'source': {
                   'repository': os.environ['GITHUB_REPOSITORY'],
-                  'revision': os.environ['GITHUB_SHA'],
+                  'revision': os.environ['SOURCE_REVISION'],
               },
               'images': {
                   'backend': {
@@ -342,6 +351,15 @@ jobs:
           )
           PY
           python -m json.tool release/release-manifest.json > /dev/null
+          python tools/release_manifest.py \
+            --manifest release/release-manifest.json \
+            --release-version "$RELEASE_VERSION" \
+            --repository "$GITHUB_REPOSITORY" \
+            --source-revision "$SOURCE_REVISION"
+          (
+            cd release
+            sha256sum release-manifest.json > release-manifest.json.sha256
+          )
       - uses: actions/upload-artifact@v6
         with:
           name: release-${{ needs.quality.outputs.version }}
@@ -354,5 +372,6 @@ jobs:
           generate_release_notes: true
           files: |
             release/release-manifest.json
+            release/release-manifest.json.sha256
             release/backend.cdx.json
             release/public-web.cdx.json

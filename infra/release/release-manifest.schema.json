@@ -1,21 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://cinnamon-and-clay.example/schemas/deployment-manifest.schema.json",
-  "title": "Cinnamon & Clay deployment manifest",
+  "$id": "https://cinnamon-and-clay.example/schemas/release-manifest.schema.json",
+  "title": "Cinnamon & Clay immutable release manifest",
   "type": "object",
-  "required": [
-    "schemaVersion",
-    "environment",
-    "releaseVersion",
-    "source",
-    "releaseManifest",
-    "images",
-    "promotion",
-    "promotedAt"
-  ],
+  "required": ["schemaVersion", "releaseVersion", "source", "images", "generatedAt"],
   "properties": {
     "schemaVersion": {"const": "1"},
-    "environment": {"enum": ["staging", "production"]},
     "releaseVersion": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
@@ -32,19 +22,6 @@
       },
       "additionalProperties": false
     },
-    "releaseManifest": {
-      "type": "object",
-      "required": ["tag", "fileName", "sha256"],
-      "properties": {
-        "tag": {
-          "type": "string",
-          "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
-        },
-        "fileName": {"const": "release-manifest.json"},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
-      },
-      "additionalProperties": false
-    },
     "images": {
       "type": "object",
       "required": ["backend", "publicWeb"],
@@ -54,42 +31,32 @@
       },
       "additionalProperties": false
     },
-    "promotion": {
-      "type": "object",
-      "required": ["actor", "workflowRun"],
-      "properties": {
-        "actor": {"type": "string", "minLength": 1},
-        "workflowRun": {
-          "type": "string",
-          "pattern": "^https://github\\.com/.+/actions/runs/[0-9]+$"
-        }
-      },
-      "additionalProperties": false
-    },
-    "promotedAt": {"type": "string", "format": "date-time"}
+    "generatedAt": {"type": "string", "format": "date-time"}
   },
   "$defs": {
     "backendImage": {
       "type": "object",
-      "required": ["ref", "digest"],
+      "required": ["ref", "digest", "sbom"],
       "properties": {
         "ref": {
           "type": "string",
           "pattern": "^ghcr\\.io/[a-z0-9_.-]+/cinnamon-clay-backend$"
         },
-        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "sbom": {"const": "backend.cdx.json"}
       },
       "additionalProperties": false
     },
     "publicWebImage": {
       "type": "object",
-      "required": ["ref", "digest"],
+      "required": ["ref", "digest", "sbom"],
       "properties": {
         "ref": {
           "type": "string",
           "pattern": "^ghcr\\.io/[a-z0-9_.-]+/cinnamon-clay-public-web$"
         },
-        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "sbom": {"const": "public-web.cdx.json"}
       },
       "additionalProperties": false
     }

@@ -43,8 +43,8 @@ Implemented append-only administrator audit events, request/trace correlation, p
 
 ## PR 09 - delivery - complete for provider-neutral portfolio scope
 
-Production container builds are PR-validated. Release tags publish scanned GHCR images, BuildKit provenance/SBOM attestations, CycloneDX SBOM artifacts and keyless Cosign signatures. Release and environment deployment manifests pin immutable digests; GitHub Environments gate provider-neutral promotion and the rollback runbook re-promotes the last known-good digest pair.
+Production container builds are PR-validated. Mainline release tags publish scanned GHCR images, BuildKit provenance/SBOM attestations, CycloneDX SBOM artifacts and keyless Cosign signatures. Checksummed release manifests plus versioned evidence schemas pin immutable source/image coordinates; GitHub Environments gate tag-bound provider-neutral promotion and the rollback runbook re-promotes the last known-good tagged digest pair.
 
 ## PR 10 - release readiness and documentation - in progress
 
-Real-Chromium public E2E and Lighthouse accessibility/performance budgets are now CI gates. Architecture diagrams, threat model and engineering trade-offs exist. Remaining evidence is the committed Android runner/device smoke, one signed promotion rehearsal, final screenshots/demo video and concise case-study/release notes.
+Real-Chromium public E2E and Lighthouse accessibility/performance budgets are now CI gates. The Android host/runner and native emulator smoke are committed, and architecture diagrams, threat model and engineering trade-offs exist. Remaining evidence is one real external-browser Keycloak login on emulator/device, one signed promotion rehearsal, final screenshots/demo video and concise case-study/release notes.
