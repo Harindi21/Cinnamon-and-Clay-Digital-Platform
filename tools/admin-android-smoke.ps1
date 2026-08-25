@@ -96,9 +96,14 @@ Invoke-Checked adb -s $DeviceId reverse "tcp:$KeycloakPort" "tcp:$KeycloakPort"
 
 Push-Location $adminRoot
 try {
+    & (Join-Path $adminRoot 'tool\ensure_android_sdk.ps1')
+    if (-not $?) { throw 'Android SDK API 37 provisioning failed.' }
+
     Invoke-Checked flutter pub get
     & (Join-Path $adminRoot 'tool\verify_gradle_wrapper_pin.ps1')
     if (-not $?) { throw 'Gradle wrapper integrity pin validation failed.' }
+    & (Join-Path $adminRoot 'tool\verify_android_toolchain.ps1')
+    if (-not $?) { throw 'Android toolchain contract validation failed.' }
 
     if (-not $SkipUnitChecks) {
         Invoke-Checked flutter analyze

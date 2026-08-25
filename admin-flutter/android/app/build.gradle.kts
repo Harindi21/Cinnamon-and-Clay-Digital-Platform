@@ -26,7 +26,10 @@ if (releaseTaskRequested && !hasReleaseSigning && !allowUnsignedRelease) {
 
 android {
     namespace = "dev.cinnamonandclay.admin"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage 11.x requires Android API 37 at compile time.
+    // Keep compileSdk independent from targetSdk so adopting newer compile-time
+    // APIs does not silently opt the app into newer runtime behavior.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

@@ -30,12 +30,18 @@ jobs:
           flutter-version: '3.47.1'
           channel: stable
           cache: true
+      - name: Install Android API 37 toolchain
+        shell: pwsh
+        run: ./admin-flutter/tool/ensure_android_sdk.ps1
       - name: Resolve dependencies
         working-directory: admin-flutter
         run: flutter pub get
       - name: Verify Gradle wrapper integrity pin
         shell: pwsh
         run: ./admin-flutter/tool/verify_gradle_wrapper_pin.ps1
+      - name: Verify Android API 37 toolchain contract
+        shell: pwsh
+        run: ./admin-flutter/tool/verify_android_toolchain.ps1
       - name: Build debug APK once
         working-directory: admin-flutter
         run: >-

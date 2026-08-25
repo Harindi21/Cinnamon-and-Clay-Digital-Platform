@@ -48,13 +48,15 @@ OIDC_REDIRECT_URL=dev.cinnamonandclay.admin:/oauthredirect
 
 The debug Android manifest/network-security configuration is the only build variant that permits cleartext HTTP.
 
-The Gradle distribution URL and SHA-256 are pinned in `android/gradle/wrapper/gradle-wrapper.properties`. The Flutter tool materializes its SDK-managed Gradle wrapper launcher/JAR during Android builds, so CI validates the committed pin before `flutter build` and does not invoke `gradlew` as a standalone preflight.
+The Android build contract is intentionally explicit: `compileSdk` is 37 because `flutter_secure_storage` 11.x requires API 37, while `targetSdk` remains Flutter-managed so a compile-time compatibility update does not silently opt the app into new runtime behavior. Android Gradle Plugin 9.1.1 is paired with Gradle 9.3.1, an API-37-supported combination. CI provisions API 37 and Build Tools 36.0.0 before building, validates the toolchain contract, and validates the Gradle distribution URL and SHA-256 in `android/gradle/wrapper/gradle-wrapper.properties`. The Flutter tool materializes its SDK-managed Gradle wrapper launcher/JAR during Android builds, so CI does not invoke `gradlew` as a standalone preflight.
 
 ## Quality checks
 
 ```powershell
+.\tool\ensure_android_sdk.ps1
 flutter pub get
 .\tool\verify_gradle_wrapper_pin.ps1
+.\tool\verify_android_toolchain.ps1
 flutter analyze
 flutter test
 flutter build apk --debug
