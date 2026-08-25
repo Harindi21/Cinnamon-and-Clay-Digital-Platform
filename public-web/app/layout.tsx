@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import './globals.css';
+import { getSiteContent } from '@/lib/site';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -14,11 +15,26 @@ const fraunces = Fraunces({
   display: 'swap'
 });
 
-export const metadata: Metadata = {
-  title: 'Cinnamon & Clay — Slow coffee. Warm bakes. Good company.',
-  description:
-    'A neighbourhood coffee house in the heart of Colombo.'
+const fallbackMetadata = {
+  name: 'Cinnamon & Clay',
+  tagline: 'Slow coffee. Warm bakes. Good company.',
+  description: 'A neighbourhood coffee house in the heart of Colombo.'
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const content = await getSiteContent();
+    return {
+      title: `${content.brand.name} — ${content.brand.tagline}`,
+      description: content.brand.heroNote
+    };
+  } catch {
+    return {
+      title: `${fallbackMetadata.name} — ${fallbackMetadata.tagline}`,
+      description: fallbackMetadata.description
+    };
+  }
+}
 
 export default function RootLayout({
   children
