@@ -97,6 +97,11 @@ Invoke-Checked adb -s $DeviceId reverse "tcp:$KeycloakPort" "tcp:$KeycloakPort"
 Push-Location $adminRoot
 try {
     Invoke-Checked flutter pub get
+    & (Join-Path $adminRoot 'tool\verify_gradle_wrapper_pin.ps1')
+    if (-not $?) { throw 'Gradle wrapper integrity pin validation failed.' }
+
+    $gradleWrapper = Join-Path $adminRoot 'android\gradlew.bat'
+    Invoke-Checked $gradleWrapper --version
 
     if (-not $SkipUnitChecks) {
         Invoke-Checked flutter analyze

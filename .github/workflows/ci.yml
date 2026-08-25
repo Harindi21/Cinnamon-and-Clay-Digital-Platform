@@ -128,6 +128,12 @@ jobs:
       - name: Install dependencies
         working-directory: admin-flutter
         run: flutter pub get
+      - name: Verify Gradle wrapper integrity pin
+        shell: pwsh
+        run: ./admin-flutter/tool/verify_gradle_wrapper_pin.ps1
+      - name: Verify Gradle distribution can bootstrap
+        working-directory: admin-flutter/android
+        run: ./gradlew --version
       - name: Analyze
         working-directory: admin-flutter
         run: flutter analyze

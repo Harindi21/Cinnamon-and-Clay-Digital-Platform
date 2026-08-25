@@ -71,6 +71,12 @@ jobs:
           flutter pub get
           flutter analyze
           flutter test
+      - name: Verify Gradle wrapper integrity pin
+        shell: pwsh
+        run: ./admin-flutter/tool/verify_gradle_wrapper_pin.ps1
+      - name: Verify Gradle distribution can bootstrap
+        working-directory: admin-flutter/android
+        run: ./gradlew --version
       - name: Restore Android signing keystore
         shell: bash
         env:

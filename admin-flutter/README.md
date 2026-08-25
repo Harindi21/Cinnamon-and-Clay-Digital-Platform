@@ -52,6 +52,7 @@ The debug Android manifest/network-security configuration is the only build vari
 
 ```powershell
 flutter pub get
+.\tool\verify_gradle_wrapper_pin.ps1
 flutter analyze
 flutter test
 flutter build apk --debug
