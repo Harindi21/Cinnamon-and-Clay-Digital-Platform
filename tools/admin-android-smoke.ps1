@@ -100,9 +100,6 @@ try {
     & (Join-Path $adminRoot 'tool\verify_gradle_wrapper_pin.ps1')
     if (-not $?) { throw 'Gradle wrapper integrity pin validation failed.' }
 
-    $gradleWrapper = Join-Path $adminRoot 'android\gradlew.bat'
-    Invoke-Checked $gradleWrapper --version
-
     if (-not $SkipUnitChecks) {
         Invoke-Checked flutter analyze
         Invoke-Checked flutter test
