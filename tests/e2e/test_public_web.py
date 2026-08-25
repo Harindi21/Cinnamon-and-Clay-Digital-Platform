@@ -35,6 +35,10 @@ def test_public_home_renders_end_to_end_content(page: Page) -> None:
     response = page.goto(WEB_BASE_URL, wait_until="networkidle")
     assert response is not None and response.ok
 
+    navigation = page.get_by_role("navigation", name="Primary")
+    expect(navigation.get_by_role("link", name="About")).to_have_attribute("href", "#about")
+    expect(navigation.get_by_role("link", name="Menu")).to_have_attribute("href", "#menu")
+    expect(navigation.get_by_role("link", name="Visit Us")).to_have_attribute("href", "#visit")
     expect(page.get_by_role("heading", name="Cinnamon & Clay", exact=True)).to_be_visible()
     expect(page.get_by_role("heading", name="The Menu")).to_be_visible()
     expect(page.get_by_role("heading", name="Coffee", exact=True)).to_be_visible()
@@ -47,6 +51,18 @@ def test_public_home_renders_end_to_end_content(page: Page) -> None:
     expect(page.get_by_role("link", name="Order on WhatsApp")).to_have_attribute(
         "href", r"https://wa.me/94770000000?text=Hello%20Cinnamon%20%26%20Clay"
     )
+
+
+def test_mobile_navigation_opens_and_closes_with_keyboard(page: Page) -> None:
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto(WEB_BASE_URL, wait_until="networkidle")
+
+    toggle = page.get_by_role("button", name="Open navigation menu")
+    toggle.click()
+
+    expect(page.get_by_role("link", name="About")).to_be_visible()
+    page.keyboard.press("Escape")
+    expect(page.get_by_role("button", name="Open navigation menu")).to_be_focused()
 
 
 def test_gallery_lightbox_keyboard_navigation_and_focus_restore(page: Page) -> None:

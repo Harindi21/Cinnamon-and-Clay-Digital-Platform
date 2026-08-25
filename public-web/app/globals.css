@@ -1000,3 +1000,133 @@ footer {
 .pageStateCard button:hover {
   background: #714829;
 }
+/* ---------- site navigation ---------- */
+.siteNav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  color: #ffffff;
+  background: rgba(44, 30, 20, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.siteNavInner {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.siteBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.siteNavMenu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.siteNavMenu a {
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 150ms ease;
+}
+
+.siteNavMenu a:hover {
+  color: var(--accent-strong);
+}
+
+.siteNavToggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.siteNavToggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  margin: 5px auto;
+  border-radius: 999px;
+  background: #ffffff;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.siteNavOpen .siteNavToggle span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.siteNavOpen .siteNavToggle span:nth-child(2) {
+  opacity: 0;
+}
+
+.siteNavOpen .siteNavToggle span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 760px) {
+  .siteNavToggle {
+    display: block;
+    position: relative;
+    z-index: 2;
+  }
+
+  .siteNavMenu {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 90px 24px 40px;
+    background: var(--bg);
+    transform: translateX(100%);
+    transition: transform 180ms ease;
+  }
+
+  .siteNavOpen .siteNavMenu {
+    transform: translateX(0);
+  }
+
+  .siteNavMenu a {
+    color: var(--ink);
+    font-size: 1.2rem;
+  }
+
+  .siteNavOpen .siteBrand {
+    color: var(--primary);
+  }
+
+  .siteNavOpen .siteNavToggle {
+    border-color: rgba(44, 30, 20, 0.2);
+    background: transparent;
+  }
+
+  .siteNavOpen .siteNavToggle span {
+    background: var(--primary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .siteNavMenu,
+  .siteNavToggle span,
+  .siteNavMenu a {
+    transition: none;
+  }
+}

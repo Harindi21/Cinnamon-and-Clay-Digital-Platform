@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Gallery } from '@/components/gallery';
+import { SiteNav } from '@/components/site-nav';
 import { connection } from 'next/server';
 import { getPublicReviews } from '@/lib/reviews';
 
@@ -35,7 +36,9 @@ const [
   const whatsAppUrl = whatsappHref(contact.whatsapp);
 
   return (
-    <main>
+    <main id="top">
+      <SiteNav brand={content.brand.name} />
+
       {/* Hero */}
       <section className="hero">
         {media.hero && (
