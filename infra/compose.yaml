@@ -144,6 +144,7 @@ services:
     environment:
       BACKEND_INTERNAL_URL: http://backend:8080
       PUBLIC_REVALIDATION_SECRET: ${PUBLIC_REVALIDATION_SECRET:-change-me-locally}
+      DEMO_MEDIA_FALLBACK_ENABLED: ${DEMO_MEDIA_FALLBACK_ENABLED:-false}
     ports:
       - "${PUBLIC_WEB_PORT:-3000}:3000"
     security_opt:

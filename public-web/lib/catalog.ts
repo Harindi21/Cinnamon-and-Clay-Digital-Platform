@@ -29,6 +29,12 @@ export function getMenu(): Promise<MenuResponse> {
 }
 
 export function formatMoney(money: Money): string {
+  if (money.currency.toUpperCase() === 'LKR') {
+    return `Rs. ${new Intl.NumberFormat('en-LK', {
+      maximumFractionDigits: 0
+    }).format(money.amountMinor / 100)}`;
+  }
+
   return new Intl.NumberFormat('en-LK', {
     style: 'currency',
     currency: money.currency,

@@ -12,8 +12,16 @@ const links = [
 
 export function SiteNav({ brand }: { brand: string }) {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -41,7 +49,10 @@ export function SiteNav({ brand }: { brand: string }) {
   }, [open]);
 
   return (
-    <nav className={`siteNav${open ? ' siteNavOpen' : ''}`} aria-label="Primary">
+    <nav
+      className={`siteNav${scrolled ? ' siteNavScrolled' : ''}${open ? ' siteNavOpen' : ''}`}
+      aria-label="Primary"
+    >
       <div className="shell siteNavInner">
         <a
           className="siteBrand"

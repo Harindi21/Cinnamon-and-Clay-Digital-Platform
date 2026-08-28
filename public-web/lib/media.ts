@@ -23,6 +23,10 @@ export function getPublicMedia(): Promise<PublicMedia> {
 }
 
 export function mediaSrc(asset: MediaAsset): string {
+  if (/^https?:\/\//i.test(asset.url)) {
+    return asset.url;
+  }
+
   return `/media/${encodeURIComponent(asset.id)}?v=${asset.version}`;
 }
 
