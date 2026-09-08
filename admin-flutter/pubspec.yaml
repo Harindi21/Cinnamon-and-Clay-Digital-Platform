@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  dio: ^5.11.0
+  dio: ^5.11.1
   flutter_riverpod: ^3.4.2
   go_router: ^17.3.0
   flutter_appauth: ^12.0.2
