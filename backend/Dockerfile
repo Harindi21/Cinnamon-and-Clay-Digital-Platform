@@ -10,7 +10,7 @@ COPY src src
 RUN --mount=type=cache,target=/root/.m2 \
     mvn --batch-mode -DskipTests package
 
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:25-jre AS runtime
 ENV SPRING_PROFILES_ACTIVE=prod
 WORKDIR /app
 RUN useradd --system --uid 10001 --no-create-home appuser
